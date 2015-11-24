@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/drawer"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	android:orientation="vertical"
+	>
+	<EditText
+		android:id="@+id/filter"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:background="@drawable/white_rounded"
+		android:layout_marginBottom="8dp"
+		android:padding="8dp"
+		/>
+	<GridView
+		android:id="@+id/list"
+		android:layout_width="fill_parent"
+		android:layout_height="0dp"
+		android:layout_weight="1"
+		android:numColumns="1"
+		android:stretchMode="columnWidth"
+		android:background="@drawable/white_rounded"
+		/>
+</LinearLayout>

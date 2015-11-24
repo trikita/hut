@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+	<Preference
+		android:key="wallpaper"
+		android:title="Wallpaper" />
+	<Preference
+		android:key="blacklist"
+		android:title="Blacklist apps">
+		<intent
+			android:action="trikita.hut.intent.action.BLACKLIST"
+			android:targetClass="trikita.hut.PickerActivity"
+			android:targetPackage="trikita.hut"
+			/>
+	</Preference>
+	<Preference
+		android:key="tap"
+		android:title="Launch on tap">
+		<intent
+			android:action="trikita.hut.intent.action.PICK"
+			android:data="hut://action/tap"
+			android:targetClass="trikita.hut.PickerActivity"
+			android:targetPackage="trikita.hut"
+			/>
+	</Preference>
+	<Preference
+		android:key="tap"
+		android:title="Launch on swipe left">
+		<intent
+			android:action="trikita.hut.intent.action.PICK"
+			android:data="hut://action/left"
+			android:targetClass="trikita.hut.PickerActivity"
+			android:targetPackage="trikita.hut"
+			/>
+	</Preference>
+</PreferenceScreen>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/background"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	android:padding="8dp"
+	>
+	<RelativeLayout
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+		>
+		<Button
+			android:id="@+id/btn_apps"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="Hello World, LauncherActivity"
+			android:layout_alignParentBottom="true"
+			android:layout_centerHorizontal="true"
+			/>
+	</RelativeLayout>
+
+	<include layout="@layout/drawer" />
+</FrameLayout>
+
