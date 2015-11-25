@@ -76,7 +76,7 @@ public class AppsProvider {
     private List<ActionInfo> getActions(Context context, Uri uri) {
         ArrayList<ActionInfo> actions = new ArrayList<>();
         Cursor c = context.getContentResolver().query(uri, CURSOR_COLUMNS, null, null, null);
-        if (c == null || c.getCount() == 0) {
+        if (c == null) {
             return actions;
         }
         c.moveToFirst();
@@ -96,6 +96,7 @@ public class AppsProvider {
                             c.getString(c.getColumnIndex(COLUMN_SECONDARY_MIME))));
             actions.add(action);
         }
+        c.close();
         return actions;
     }
 
