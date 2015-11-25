@@ -1,12 +1,15 @@
 package trikita.hut;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
-import android.widget.AbsListView;
+import android.view.ViewAnimationUtils;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.GridView;
@@ -33,6 +36,9 @@ public class LauncherActivity extends Activity {
 	@Override
 	public void onCreate(Bundle b) {
 		super.onCreate(b);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+			getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+		}
 		setContentView(R.layout.main);
 		ButterKnife.bind(this);
 
@@ -47,10 +53,8 @@ public class LauncherActivity extends Activity {
 		mAppsFilter.setText("");
 		mAppsAdapter = new AppsAdapter(whitelist(mAppsProvider.apps()), false);
 		mAppsListView.setAdapter(mAppsAdapter);
-		mDrawerView.setVisibility(View.VISIBLE);
-		mDrawerButton.setVisibility(View.GONE);
 		mAppsFilter.setVisibility(View.GONE);
-		mDrawerShown = true;
+		revealDrawer(true);
 	}
 
 	private List<AppsProvider.ActionInfo> whitelist(List<AppsProvider.ActionInfo> list) {
@@ -69,13 +73,41 @@ public class LauncherActivity extends Activity {
 	public boolean openDrawerWithFilter() {
 		mAppsAdapter = new AppsAdapter(mAppsProvider.apps(), false);
 		mAppsListView.setAdapter(mAppsAdapter);
-		mDrawerView.setVisibility(View.VISIBLE);
-		mDrawerButton.setVisibility(View.GONE);
 		mAppsFilter.setText("");
 		mAppsFilter.setVisibility(View.VISIBLE);
 		mAppsFilter.requestFocus();
-		mDrawerShown = true;
+		revealDrawer(true);
 		return true;
+	}
+
+	private void revealDrawer(boolean show) {
+		int cx = (mDrawerButton.getLeft() + mDrawerButton.getRight()) / 2;
+		int cy = (mDrawerButton.getTop() + mDrawerButton.getBottom()) / 2;
+		int r = Math.max(mDrawerView.getWidth(), mDrawerView.getHeight());
+		if (show) {
+			mDrawerView.setVisibility(show ? View.VISIBLE : View.GONE);
+			if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+				Animator anim =
+						ViewAnimationUtils.createCircularReveal(mDrawerView, cx, cy, 0, r);
+				anim.start();
+			}
+		} else {
+			if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+				Animator anim =
+						ViewAnimationUtils.createCircularReveal(mDrawerView, cx, cy, r, 0);
+				anim.addListener(new AnimatorListenerAdapter() {
+					public void onAnimationEnd(Animator animation) {
+						mDrawerView.setVisibility(View.GONE);
+						super.onAnimationEnd(animation);
+					}
+				});
+				anim.start();
+			} else {
+				mDrawerView.setVisibility(View.GONE);
+			}
+		}
+        mDrawerButton.setVisibility(show ? View.GONE : View.VISIBLE);
+        mDrawerShown = show;
 	}
 
 	@OnLongClick(R.id.background)
@@ -106,14 +138,12 @@ public class LauncherActivity extends Activity {
 	@OnTextChanged(R.id.filter)
 	public void onFilterChanged(CharSequence s, int start, int before, int count) {
 		mAppsAdapter.getFilter().filter(s.toString());
-	}
+		}
 
-	@Override
+		@Override
 	public void onBackPressed() {
 		if (mDrawerShown) {
-			mDrawerShown = false;
-			mDrawerView.setVisibility(View.GONE);
-			mDrawerButton.setVisibility(View.VISIBLE);
+			revealDrawer(false);
 		} else {
 			super.onBackPressed();
 		}
