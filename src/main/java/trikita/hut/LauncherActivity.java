@@ -2,42 +2,18 @@ package trikita.hut;
 
 import android.app.Activity;
 import android.app.PendingIntent;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.PaintDrawable;
-import android.graphics.Paint;
-import android.graphics.PaintFlagsDrawFilter;
-import android.graphics.PixelFormat;
-import android.graphics.Rect;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.provider.Settings;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.BaseAdapter;
 import android.widget.EditText;
-import android.widget.Filter;
-import android.widget.Filterable;
-import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.GridView;
 
 import butterknife.*;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -47,7 +23,7 @@ public class LauncherActivity extends Activity {
 	@Bind(R.id.background) View mBackgroundView;
 	@Bind(R.id.drawer) View mDrawerView;
 	@Bind(R.id.btn_apps) View mDrawerButton;
-	@Bind(R.id.list) AbsListView mAppsListView;
+	@Bind(R.id.list) GridView mAppsListView;
 	@Bind(R.id.filter) EditText mAppsFilter;
 
 	private boolean mDrawerShown = false;
@@ -77,11 +53,11 @@ public class LauncherActivity extends Activity {
 		mDrawerShown = true;
 	}
 
-	private List<AppsProvider.AppInfo> whitelist(List<AppsProvider.AppInfo> list) {
-		List<AppsProvider.AppInfo> filtered = new ArrayList<>();
+	private List<AppsProvider.ActionInfo> whitelist(List<AppsProvider.ActionInfo> list) {
+		List<AppsProvider.ActionInfo> filtered = new ArrayList<>();
 		Set<String> set = PreferenceManager.getDefaultSharedPreferences(this)
 			.getStringSet("blacklist", new HashSet<String>());
-		for (AppsProvider.AppInfo app : list) {
+		for (AppsProvider.ActionInfo app : list) {
 			if (set.contains(app.id) == false) {
 				filtered.add(app);
 			}

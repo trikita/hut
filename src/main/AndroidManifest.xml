@@ -26,5 +26,9 @@
 
 		<activity android:name=".SettingsActivity" />
 
+		<provider
+			android:authorities="trikita.hut.apps"
+			android:name=".apps.Apps" />
+
 	</application>
 </manifest>

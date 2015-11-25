@@ -40,7 +40,7 @@ public class PickerActivity extends Activity {
 			public void onItemClick(AdapterView<?> av, View v, int pos, long id) {
 				System.out.println("Clicked on " + pos);
 				AppsAdapter.ViewHolder h = (AppsAdapter.ViewHolder) v.getTag();
-				AppsProvider.AppInfo info = mAppsAdapter.getItem(pos);
+				AppsProvider.ActionInfo info = mAppsAdapter.getItem(pos);
 				h.checkBox.toggle();
 				if (h.checkBox.isChecked()) {
 					mBlacklisted.remove(info.id);

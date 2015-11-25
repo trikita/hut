@@ -1,7 +1,6 @@
 package trikita.hut;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,23 +15,21 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class AppsAdapter extends BaseAdapter implements Filterable {
-	private List<AppsProvider.AppInfo> mAllApps;
-	private List<AppsProvider.AppInfo> mFilteredAppList;
+	private List<AppsProvider.ActionInfo> mAllApps;
+	private List<AppsProvider.ActionInfo> mFilteredAppList;
 
-	private boolean mHideBlacklisted = false;
 	private boolean mMultiCheck = false;
 
 	private Filter mFilter = new Filter() {
 		protected FilterResults performFiltering(CharSequence s) {
 			FilterResults results = new FilterResults();
-			List<AppsProvider.AppInfo> filtered = new ArrayList<>();
+			List<AppsProvider.ActionInfo> filtered = new ArrayList<>();
 			if (s != null) {
 				s = s.toString().toLowerCase();
 			}
-			for (AppsProvider.AppInfo app : mAllApps) {
+			for (AppsProvider.ActionInfo app : mAllApps) {
 				String title = app.title.toLowerCase();
 				if (s == null || s.length() == 0 || title.indexOf(s.toString()) >= 0) {
 					filtered.add(app);
@@ -43,12 +40,12 @@ public class AppsAdapter extends BaseAdapter implements Filterable {
 			return results;
 		}
 		protected void publishResults(CharSequence s, FilterResults results) {
-			mFilteredAppList = (List<AppsProvider.AppInfo>) results.values;
+			mFilteredAppList = (List<AppsProvider.ActionInfo>) results.values;
 			notifyDataSetInvalidated();
 		}
 	};
 
-	public AppsAdapter(List<AppsProvider.AppInfo> apps, boolean multi) {
+	public AppsAdapter(List<AppsProvider.ActionInfo> apps, boolean multi) {
 		super();
 		mMultiCheck = multi;
 		mAllApps = apps;
@@ -59,7 +56,7 @@ public class AppsAdapter extends BaseAdapter implements Filterable {
 		return mFilteredAppList.size();
 	}
 
-	public AppsProvider.AppInfo getItem(int pos) {
+	public AppsProvider.ActionInfo getItem(int pos) {
 		return mFilteredAppList.get(pos);
 	}
 
@@ -72,7 +69,7 @@ public class AppsAdapter extends BaseAdapter implements Filterable {
 	}
 
 	public View getView(int pos, View v, ViewGroup vg) {
-		AppsProvider.AppInfo info = this.getItem(pos);
+		AppsProvider.ActionInfo info = this.getItem(pos);
 
 		if (v == null) {
 			LayoutInflater inflater = (LayoutInflater)
