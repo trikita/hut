@@ -8,6 +8,9 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewAnimationUtils;
 import android.widget.AdapterView;
@@ -23,7 +26,6 @@ import java.util.Set;
 
 public class LauncherActivity extends Activity {
 
-	@Bind(R.id.background) View mBackgroundView;
 	@Bind(R.id.drawer) View mDrawerView;
 	@Bind(R.id.btn_apps) View mDrawerButton;
 	@Bind(R.id.list) GridView mAppsListView;
@@ -41,6 +43,52 @@ public class LauncherActivity extends Activity {
 		}
 		setContentView(R.layout.main);
 		ButterKnife.bind(this);
+
+		mGestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+
+			private static final int MAX_VELOCITY_RATIO = 3;
+			private static final int MIN_SWIPE_DISTANCE = 100;
+
+			@Override
+			public boolean onDown(MotionEvent e) {
+				Log.d("LauncherActivity", "onDown");
+				return true;
+			}
+
+			@Override
+			public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+				int dx = (int) (e2.getX() - e1.getX());
+				int dy = (int) (e2.getY() - e1.getY());
+				if (Math.abs(dx) > MIN_SWIPE_DISTANCE && Math.abs(velocityX) > MAX_VELOCITY_RATIO*Math.abs(velocityY)) {
+					if (velocityX > 0) {
+						Log.d("LauncherActivity", "on swipe right");
+					} else {
+						Log.d("LauncherActivity", "on swipe left");
+					}
+					return true;
+				} else if (Math.abs(dy) > MIN_SWIPE_DISTANCE && Math.abs(velocityY) > MAX_VELOCITY_RATIO*Math.abs(velocityX)) {
+					if (velocityY > 0) {
+						Log.d("LauncherActivity", "on swipe down");
+					} else {
+						Log.d("LauncherActivity", "on swipe up");
+					}
+					return true;
+				}
+				return false;
+			}
+
+			@Override
+			public boolean onSingleTapUp(MotionEvent e) {
+				Log.d("LauncherActivity", "onSingleTapUp");
+				return true;
+			}
+
+			@Override
+			public void onLongPress(MotionEvent e) {
+				Log.d("LauncherActivity", "onLongPress");
+				startActivity(new Intent(LauncherActivity.this, SettingsActivity.class));
+			}
+		});
 
 		mAppsProvider = new AppsProvider().update(this);
 		mAppsAdapter = new AppsAdapter(mAppsProvider.apps(), false);
@@ -110,10 +158,11 @@ public class LauncherActivity extends Activity {
         mDrawerShown = show;
 	}
 
-	@OnLongClick(R.id.background)
-	public boolean openSettings() {
-		startActivity(new Intent(this, SettingsActivity.class));
-		return true;
+	private GestureDetector mGestureDetector;
+
+	@OnTouch(R.id.background)
+	public boolean onGesture(MotionEvent e) {
+		return mGestureDetector.onTouchEvent(e);
 	}
 
 	@OnItemClick(R.id.list)
@@ -138,9 +187,9 @@ public class LauncherActivity extends Activity {
 	@OnTextChanged(R.id.filter)
 	public void onFilterChanged(CharSequence s, int start, int before, int count) {
 		mAppsAdapter.getFilter().filter(s.toString());
-		}
+	}
 
-		@Override
+	@Override
 	public void onBackPressed() {
 		if (mDrawerShown) {
 			revealDrawer(false);
