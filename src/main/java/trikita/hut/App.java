@@ -3,10 +3,11 @@ package trikita.hut;
 import android.app.Application;
 
 public class App extends Application {
-    public static ActionsProvider sActionsInstance = null;
+    private static ActionsProvider sActionsInstance = null;
 
     @Override
     public void onCreate() {
+        super.onCreate();
         sActionsInstance = new ActionsProvider(getApplicationContext());
     }
 

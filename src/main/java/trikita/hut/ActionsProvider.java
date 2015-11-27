@@ -18,15 +18,12 @@ import android.graphics.PaintFlagsDrawFilter;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.net.Uri;
-import android.util.Log;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import trikita.hut.apps.Apps;
 
 public class ActionsProvider {
 
@@ -63,13 +60,13 @@ public class ActionsProvider {
         }
     }
 
-    public final static String COLUMN_ID = "id";
-    public final static String COLUMN_ICON = "icon";
-    public final static String COLUMN_TITLE = "title";
-    public final static String COLUMN_DESCRIPTION = "description";
+    private final static String COLUMN_ID = "id";
+    private final static String COLUMN_ICON = "icon";
+    private final static String COLUMN_TITLE = "title";
+    private final static String COLUMN_DESCRIPTION = "description";
 
-    public final static String COLUMN_ACTION = "action";
-    public final static String COLUMN_SETTINGS = "settings";
+    private final static String COLUMN_ACTION = "action";
+    private final static String COLUMN_SETTINGS = "settings";
 
     public final static String[] CURSOR_COLUMNS = new String[]{
             COLUMN_ID, COLUMN_ICON, COLUMN_TITLE, COLUMN_DESCRIPTION,
@@ -87,14 +84,14 @@ public class ActionsProvider {
     public final static String SHORTCUT_SWIPE_DOWN = "swipe-down";
     public final static String SHORTCUT_TAP = "tap";
 
-    private Context mContext;
+    private final Context mContext;
     private List<ActionInfo> mCache = null;
 
     public ActionsProvider(Context context) {
         mContext = context;
     }
 
-	public synchronized void refresh() {
+	private synchronized void refresh() {
         List<ActionInfo> actions = new ArrayList<>();
         for (PackageInfo pack : mContext.getPackageManager().getInstalledPackages(PackageManager.GET_PROVIDERS)) {
             ProviderInfo[] providers = pack.providers;

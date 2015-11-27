@@ -10,7 +10,7 @@
 		android:layout_height="wrap_content"
 		android:paddingLeft="8dp"
 		android:paddingRight="8dp"
-		/>
+		android:contentDescription="@string/icon_description" />
 	<TextView
 		android:id="@+id/label"
 		android:layout_width="0dp"

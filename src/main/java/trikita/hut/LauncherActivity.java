@@ -3,7 +3,6 @@ package trikita.hut;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
-import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,9 +16,6 @@ import android.widget.EditText;
 import android.widget.GridView;
 
 import butterknife.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class LauncherActivity extends Activity {
 
@@ -112,7 +108,7 @@ public class LauncherActivity extends Activity {
 		int cy = (mDrawerButton.getTop() + mDrawerButton.getBottom()) / 2;
 		int r = Math.max(mDrawerView.getWidth(), mDrawerView.getHeight());
 		if (show) {
-			mDrawerView.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
+			mDrawerView.setVisibility(View.VISIBLE);
 			if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 				Animator anim =
 						ViewAnimationUtils.createCircularReveal(mDrawerView, cx, cy, 0, r);

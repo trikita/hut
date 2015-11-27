@@ -15,12 +15,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ActionsAdapter extends BaseAdapter implements Filterable {
-	private List<ActionsProvider.ActionInfo> mOriginalList;
+	private final List<ActionsProvider.ActionInfo> mOriginalList;
 	private List<ActionsProvider.ActionInfo> mFilteredList;
 
 	private boolean mShowCheckboxes = false;
 
-	private Filter mFilter = new Filter() {
+	private final Filter mFilter = new Filter() {
 		protected FilterResults performFiltering(CharSequence s) {
 			FilterResults results = new FilterResults();
 			List<ActionsProvider.ActionInfo> filtered = new ArrayList<>();
