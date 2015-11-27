@@ -22,6 +22,8 @@ import android.util.Log;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import trikita.hut.apps.Apps;
@@ -104,6 +106,14 @@ public class ActionsProvider {
                 }
             }
         }
+        Collections.sort(actions, new Comparator<ActionInfo>() {
+            public int compare(ActionInfo lhs, ActionInfo rhs) {
+                return notNull(lhs.title).compareTo(notNull(rhs.title));
+            }
+            private String notNull(String s) {
+                return s == null ? "" : s;
+            }
+        });
         mCache = actions;
 	}
 
