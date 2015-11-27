@@ -53,7 +53,8 @@ public class ActionsProvider {
         private void run(Activity a, String uri) {
             if (uri != null) {
                 try {
-                    a.startActivity(Intent.parseUri(uri, Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED));
+                    a.startActivity(Intent.parseUri(uri, 0)
+                            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED));
                 } catch (URISyntaxException e) {
                     e.printStackTrace();
                 }
