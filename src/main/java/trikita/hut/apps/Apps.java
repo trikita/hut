@@ -15,6 +15,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.provider.Settings;
+import android.util.Base64;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Collections;
@@ -50,7 +51,7 @@ public class Apps extends ContentProvider {
             Bitmap bitmap = drawableToBitmap(info.loadIcon(pm));
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
-            row.add(baos.toByteArray());
+            row.add(Base64.encodeToString(baos.toByteArray(), 0));
             row.add(info.loadLabel(pm).toString());
             row.add(null);
 

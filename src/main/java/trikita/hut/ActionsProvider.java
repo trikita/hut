@@ -18,6 +18,7 @@ import android.graphics.PaintFlagsDrawFilter;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.net.Uri;
+import android.util.Base64;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -177,7 +178,7 @@ public class ActionsProvider {
         c.moveToFirst();
         while (c.moveToNext()) {
             ActionInfo action = new ActionInfo(c.getString(c.getColumnIndex(COLUMN_ID)),
-                    scaleIcon(context, c.getBlob(c.getColumnIndex(COLUMN_ICON))),
+                    scaleIcon(context, Base64.decode(c.getString(c.getColumnIndex(COLUMN_ICON)), 0)),
                     c.getString(c.getColumnIndex(COLUMN_TITLE)),
                     c.getString(c.getColumnIndex(COLUMN_DESCRIPTION)),
                     c.getString(c.getColumnIndex(COLUMN_ACTION)),
