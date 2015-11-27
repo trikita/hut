@@ -29,8 +29,7 @@ public class LauncherActivity extends Activity {
 	@Bind(R.id.filter) EditText mAppsFilter;
 
 	private boolean mDrawerShown = false;
-
-	private ActionsAdapter mActionsAdapter;
+	private GestureDetector mGestureDetector;
 
 	@Override
 	public void onCreate(Bundle b) {
@@ -86,24 +85,21 @@ public class LauncherActivity extends Activity {
 			}
 		});
 
-		mActionsAdapter = new ActionsAdapter(App.actions().getAll(), false);
-		mAppsListView.setAdapter(mActionsAdapter);
+		mAppsListView.setAdapter(new ActionsAdapter(App.actions().getAll(), false));
 		mDrawerView.setVisibility(View.INVISIBLE);
 	}
 
 	@OnClick(R.id.btn_apps)
 	public void openDrawer() {
 		mAppsFilter.setText("");
-		mActionsAdapter = new ActionsAdapter(App.actions().getWhitelisted(), false);
-		mAppsListView.setAdapter(mActionsAdapter);
+		mAppsListView.setAdapter(new ActionsAdapter(App.actions().getWhitelisted(), false));
 		mAppsFilter.setVisibility(View.GONE);
 		revealDrawer(true);
 	}
 
 	@OnLongClick(R.id.btn_apps)
 	public boolean openDrawerWithFilter() {
-		mActionsAdapter = new ActionsAdapter(App.actions().getAll(), false);
-		mAppsListView.setAdapter(mActionsAdapter);
+		mAppsListView.setAdapter(new ActionsAdapter(App.actions().getAll(), false));
 		mAppsFilter.setText("");
 		mAppsFilter.setVisibility(View.VISIBLE);
 		mAppsFilter.requestFocus();
@@ -141,8 +137,6 @@ public class LauncherActivity extends Activity {
         mDrawerShown = show;
 	}
 
-	private GestureDetector mGestureDetector;
-
 	@OnTouch(R.id.background)
 	public boolean onGesture(MotionEvent e) {
 		return mGestureDetector.onTouchEvent(e);
@@ -150,18 +144,18 @@ public class LauncherActivity extends Activity {
 
 	@OnItemClick(R.id.list)
 	public void onItemClick(AdapterView<?> av, View v, int pos, long id) {
-		mActionsAdapter.getItem(pos).run(this);
+		((ActionsAdapter) av.getAdapter()).getItem(pos).run(this);
 	}
 
 	@OnItemLongClick(R.id.list)
 	public boolean onItemLongClick(AdapterView<?> av, View v, int pos, long id) {
-		mActionsAdapter.getItem(pos).settings(this);
+		((ActionsAdapter) av.getAdapter()).getItem(pos).settings(this);
 		return true;
 	}
 
 	@OnTextChanged(R.id.filter)
 	public void onFilterChanged(CharSequence s, int start, int before, int count) {
-		mActionsAdapter.getFilter().filter(s.toString());
+		((ActionsAdapter) mAppsListView.getAdapter()).getFilter().filter(s.toString());
 	}
 
 	@Override

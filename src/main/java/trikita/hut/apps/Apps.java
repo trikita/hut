@@ -24,7 +24,7 @@ import trikita.hut.ActionsProvider;
 
 public class Apps extends ContentProvider {
 
-    public static final String AUTHORITY = "trikita.hut.apps";
+    public static final String AUTHORITY = ActionsProvider.AUTHORITY_PREFIX + "apps";
     public static final Uri CONTENT_URI = Uri.parse("content://"+AUTHORITY+"/actions");
 
     public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/trikita.hut.actions";

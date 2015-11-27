@@ -4,6 +4,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ProviderInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -15,6 +18,7 @@ import android.graphics.PaintFlagsDrawFilter;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.net.Uri;
+import android.util.Log;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -70,6 +74,8 @@ public class ActionsProvider {
             COLUMN_ACTION, COLUMN_SETTINGS
     };
 
+    public final static String AUTHORITY_PREFIX = "trikita.hut.";
+
     private final static String PREFS_BLACKLIST = "blacklist";
     private final static String PREFS_SHORTCUTS = "shortcuts";
 
@@ -87,7 +93,18 @@ public class ActionsProvider {
     }
 
 	public synchronized void refresh() {
-        mCache = getActions(mContext, Apps.CONTENT_URI);
+        List<ActionInfo> actions = new ArrayList<>();
+        for (PackageInfo pack : mContext.getPackageManager().getInstalledPackages(PackageManager.GET_PROVIDERS)) {
+            ProviderInfo[] providers = pack.providers;
+            if (providers != null) {
+                for (ProviderInfo provider : providers) {
+                    if (provider.authority.startsWith(AUTHORITY_PREFIX)) {
+                        actions.addAll(getActions(mContext, Uri.parse("content://" + provider.authority + "/actions")));
+                    }
+                }
+            }
+        }
+        mCache = actions;
 	}
 
     public void blacklist(ActionInfo action, boolean state) {
