@@ -122,7 +122,8 @@ public class LauncherActivity extends Activity {
 				anim.start();
 			}
 		} else {
-			if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			if (mDrawerView.isAttachedToWindow() &&
+					android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 				Animator anim =
 						ViewAnimationUtils.createCircularReveal(mDrawerView, cx, cy, r, 0);
 				anim.addListener(new AnimatorListenerAdapter() {
