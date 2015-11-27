@@ -12,6 +12,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewAnimationUtils;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.GridView;
@@ -106,6 +107,8 @@ public class LauncherActivity extends Activity {
 		mAppsFilter.setText("");
 		mAppsFilter.setVisibility(View.VISIBLE);
 		mAppsFilter.requestFocus();
+		InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+		imm.showSoftInput(mAppsFilter, InputMethodManager.SHOW_IMPLICIT);
 		revealDrawer(true);
 		return true;
 	}
