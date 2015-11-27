@@ -7,7 +7,6 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -20,9 +19,7 @@ import android.widget.GridView;
 import butterknife.*;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class LauncherActivity extends Activity {
 
@@ -32,8 +29,8 @@ public class LauncherActivity extends Activity {
 	@Bind(R.id.filter) EditText mAppsFilter;
 
 	private boolean mDrawerShown = false;
-	private AppsProvider mAppsProvider;
-	private AppsAdapter mAppsAdapter;
+
+	private ActionsAdapter mActionsAdapter;
 
 	@Override
 	public void onCreate(Bundle b) {
@@ -90,37 +87,24 @@ public class LauncherActivity extends Activity {
 			}
 		});
 
-		mAppsProvider = new AppsProvider().update(this);
-		mAppsAdapter = new AppsAdapter(mAppsProvider.apps(), false);
-		mAppsListView.setAdapter(mAppsAdapter);
+		mActionsAdapter = new ActionsAdapter(App.actions().getAll(), false);
+		mAppsListView.setAdapter(mActionsAdapter);
 		mDrawerView.setVisibility(View.GONE);
 	}
 
 	@OnClick(R.id.btn_apps)
 	public void openDrawer() {
 		mAppsFilter.setText("");
-		mAppsAdapter = new AppsAdapter(whitelist(mAppsProvider.apps()), false);
-		mAppsListView.setAdapter(mAppsAdapter);
+		mActionsAdapter = new ActionsAdapter(App.actions().getWhitelisted(), false);
+		mAppsListView.setAdapter(mActionsAdapter);
 		mAppsFilter.setVisibility(View.GONE);
 		revealDrawer(true);
 	}
 
-	private List<AppsProvider.ActionInfo> whitelist(List<AppsProvider.ActionInfo> list) {
-		List<AppsProvider.ActionInfo> filtered = new ArrayList<>();
-		Set<String> set = PreferenceManager.getDefaultSharedPreferences(this)
-			.getStringSet("blacklist", new HashSet<String>());
-		for (AppsProvider.ActionInfo app : list) {
-			if (set.contains(app.id) == false) {
-				filtered.add(app);
-			}
-		}
-		return filtered;
-	}
-
 	@OnLongClick(R.id.btn_apps)
 	public boolean openDrawerWithFilter() {
-		mAppsAdapter = new AppsAdapter(mAppsProvider.apps(), false);
-		mAppsListView.setAdapter(mAppsAdapter);
+		mActionsAdapter = new ActionsAdapter(App.actions().getAll(), false);
+		mAppsListView.setAdapter(mActionsAdapter);
 		mAppsFilter.setText("");
 		mAppsFilter.setVisibility(View.VISIBLE);
 		mAppsFilter.requestFocus();
@@ -168,7 +152,7 @@ public class LauncherActivity extends Activity {
 	@OnItemClick(R.id.list)
 	public void onItemClick(AdapterView<?> av, View v, int pos, long id) {
 		try {
-			mAppsAdapter.getItem(pos).primaryAction.send();
+			mActionsAdapter.getItem(pos).primaryAction.send();
 		} catch (PendingIntent.CanceledException e) {
 			e.printStackTrace();
 		}
@@ -177,7 +161,10 @@ public class LauncherActivity extends Activity {
 	@OnItemLongClick(R.id.list)
 	public boolean onItemLongClick(AdapterView<?> av, View v, int pos, long id) {
 		try {
-			mAppsAdapter.getItem(pos).settingsAction.send();
+			ActionsProvider.ActionInfo action = mActionsAdapter.getItem(pos);
+			if (action.settingsAction != null) {
+				action.settingsAction.send();
+			}
 		} catch (PendingIntent.CanceledException e) {
 			e.printStackTrace();
 		}
@@ -186,7 +173,7 @@ public class LauncherActivity extends Activity {
 
 	@OnTextChanged(R.id.filter)
 	public void onFilterChanged(CharSequence s, int start, int before, int count) {
-		mAppsAdapter.getFilter().filter(s.toString());
+		mActionsAdapter.getFilter().filter(s.toString());
 	}
 
 	@Override

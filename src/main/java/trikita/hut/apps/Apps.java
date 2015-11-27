@@ -1,5 +1,6 @@
 package trikita.hut.apps;
 
+import android.content.ComponentName;
 import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -19,7 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.Collections;
 import java.util.List;
 
-import trikita.hut.AppsProvider;
+import trikita.hut.ActionsProvider;
 
 public class Apps extends ContentProvider {
 
@@ -41,7 +42,7 @@ public class Apps extends ContentProvider {
         List<ResolveInfo> actions = pm.queryIntentActivities(launcherIntent, 0);
         Collections.sort(actions, new ResolveInfo.DisplayNameComparator(pm));
 
-        MatrixCursor cursor = new MatrixCursor(AppsProvider.CURSOR_COLUMNS, actions.size());
+        MatrixCursor cursor = new MatrixCursor(ActionsProvider.CURSOR_COLUMNS, actions.size());
         for (int i = 0; i < actions.size(); i++) {
             MatrixCursor.RowBuilder row = cursor.newRow();
 
@@ -57,19 +58,14 @@ public class Apps extends ContentProvider {
             row.add(info.loadLabel(pm).toString());
             row.add(null);
 
-            // Primary action: launch app (action, data, component, category, mime)
-            row.add(Intent.ACTION_MAIN);
-            row.add(null);
-            row.add(component);
-            row.add(Intent.CATEGORY_LAUNCHER);
-            row.add(null);
-
-            // Secondary action: open app details screen (action, data, component, category, mime)
-            row.add(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-            row.add("package:" + info.activityInfo.applicationInfo.packageName);
-            row.add(null);
-            row.add(null);
-            row.add(null);
+            // main action = launch app, settings action = open app details in settings
+            row.add(new Intent(Intent.ACTION_MAIN)
+                    .setComponent(new ComponentName(info.activityInfo.applicationInfo.packageName, info.activityInfo.name))
+                    .addCategory(Intent.CATEGORY_LAUNCHER)
+                    .toUri(0));
+            row.add(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                    .setData(Uri.parse("package:" + info.activityInfo.applicationInfo.packageName))
+                    .toUri(0));
         }
         return cursor;
     }

@@ -15,9 +15,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class PickerActivity extends Activity {
-	private AppsAdapter mAppsAdapter;
-	private AppsProvider mAppsProvider;
-	private Set<String> mBlacklisted = new HashSet<>();
+
+	private ActionsProvider mActionsProvider = new ActionsProvider(this);
+	private ActionsAdapter mActionsAdapter;
 
 	public void onCreate(Bundle b) {
 		super.onCreate(b);
@@ -25,32 +25,18 @@ public class PickerActivity extends Activity {
 
 		String action = getIntent().getAction();
 
-		// If action is trikita.hut.intent.action.PICK - then add builtin actions
-		mAppsProvider = new AppsProvider().update(this);
-		mAppsAdapter = new AppsAdapter(mAppsProvider.apps(),
+		// TODO: If action is trikita.hut.intent.action.PICK - then add builtin actions
+		mActionsAdapter = new ActionsAdapter(App.actions().getAll(),
 				action.equals("trikita.hut.intent.action.BLACKLIST"));
 		AbsListView listView = ((AbsListView) findViewById(R.id.list));
-		listView.setAdapter(mAppsAdapter);
-		SharedPreferences prefs =
-			PreferenceManager.getDefaultSharedPreferences(this);
-
-		mBlacklisted.addAll(prefs.getStringSet("blacklist", new HashSet<String>()));
-
+		listView.setAdapter(mActionsAdapter);
 		listView.setOnItemClickListener(new AbsListView.OnItemClickListener() {
 			public void onItemClick(AdapterView<?> av, View v, int pos, long id) {
 				System.out.println("Clicked on " + pos);
-				AppsAdapter.ViewHolder h = (AppsAdapter.ViewHolder) v.getTag();
-				AppsProvider.ActionInfo info = mAppsAdapter.getItem(pos);
+				ActionsAdapter.ViewHolder h = (ActionsAdapter.ViewHolder) v.getTag();
+				ActionsProvider.ActionInfo info = mActionsAdapter.getItem(pos);
 				h.checkBox.toggle();
-				if (h.checkBox.isChecked()) {
-					mBlacklisted.remove(info.id);
-				} else {
-					mBlacklisted.add(info.id);
-				}
-				PreferenceManager.getDefaultSharedPreferences(PickerActivity.this)
-					.edit()
-					.putStringSet("blacklist", mBlacklisted)
-					.apply();
+				App.actions().blacklist(info, !h.checkBox.isChecked());
 			}
 		});
 
@@ -59,7 +45,7 @@ public class PickerActivity extends Activity {
 			public void beforeTextChanged(CharSequence s, int a, int b, int c) {}
 			public void afterTextChanged(Editable e) {}
 			public void onTextChanged(CharSequence s, int start, int before, int n) {
-				mAppsAdapter.getFilter().filter(s);
+				mActionsAdapter.getFilter().filter(s);
 			}
 		});
 	}

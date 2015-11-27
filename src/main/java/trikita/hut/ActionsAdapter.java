@@ -1,7 +1,6 @@
 package trikita.hut;
 
 import android.content.Context;
-import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,25 +12,24 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
-public class AppsAdapter extends BaseAdapter implements Filterable {
-	private List<AppsProvider.ActionInfo> mAllApps;
-	private List<AppsProvider.ActionInfo> mFilteredAppList;
+public class ActionsAdapter extends BaseAdapter implements Filterable {
+	private List<ActionsProvider.ActionInfo> mOriginalList;
+	private List<ActionsProvider.ActionInfo> mFilteredList;
 
-	private boolean mMultiCheck = false;
+	private boolean mShowCheckboxes = false;
 
 	private Filter mFilter = new Filter() {
 		protected FilterResults performFiltering(CharSequence s) {
 			FilterResults results = new FilterResults();
-			List<AppsProvider.ActionInfo> filtered = new ArrayList<>();
+			List<ActionsProvider.ActionInfo> filtered = new ArrayList<>();
 			if (s != null) {
 				s = s.toString().toLowerCase();
 			}
-			for (AppsProvider.ActionInfo app : mAllApps) {
+			for (ActionsProvider.ActionInfo app : mOriginalList) {
 				String title = app.title.toLowerCase();
-				if (s == null || s.length() == 0 || title.indexOf(s.toString()) >= 0) {
+				if (s == null || s.length() == 0 || title.contains(s.toString())) {
 					filtered.add(app);
 				}
 			}
@@ -40,24 +38,24 @@ public class AppsAdapter extends BaseAdapter implements Filterable {
 			return results;
 		}
 		protected void publishResults(CharSequence s, FilterResults results) {
-			mFilteredAppList = (List<AppsProvider.ActionInfo>) results.values;
+			mFilteredList = (List<ActionsProvider.ActionInfo>) results.values;
 			notifyDataSetInvalidated();
 		}
 	};
 
-	public AppsAdapter(List<AppsProvider.ActionInfo> apps, boolean multi) {
+	public ActionsAdapter(List<ActionsProvider.ActionInfo> actions, boolean showCheckboxes) {
 		super();
-		mMultiCheck = multi;
-		mAllApps = apps;
-		mFilteredAppList = apps;
+		mShowCheckboxes = showCheckboxes;
+		mOriginalList = actions;
+		mFilteredList = mOriginalList;
 	}
 
 	public int getCount() {
-		return mFilteredAppList.size();
+		return mFilteredList.size();
 	}
 
-	public AppsProvider.ActionInfo getItem(int pos) {
-		return mFilteredAppList.get(pos);
+	public ActionsProvider.ActionInfo getItem(int pos) {
+		return mFilteredList.get(pos);
 	}
 
 	public long getItemId(int pos) {
@@ -69,32 +67,25 @@ public class AppsAdapter extends BaseAdapter implements Filterable {
 	}
 
 	public View getView(int pos, View v, ViewGroup vg) {
-		AppsProvider.ActionInfo info = this.getItem(pos);
+		ActionsProvider.ActionInfo info = getItem(pos);
 
 		if (v == null) {
 			LayoutInflater inflater = (LayoutInflater)
 				vg.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			v = inflater.inflate(R.layout.item, vg, false);
 			v.setTag(new ViewHolder((ImageView) v.findViewById(R.id.icon),
-						(TextView) v.findViewById(R.id.label),
-						(CheckBox) v.findViewById(R.id.check)));
+					(TextView) v.findViewById(R.id.label),
+					(CheckBox) v.findViewById(R.id.check)));
 		}
 
 		ViewHolder h = (ViewHolder) v.getTag();
 		h.imageView.setImageDrawable(info.icon);
 		h.textView.setText(info.title);
 
-		if (mMultiCheck == false) {
-			h.checkBox.setVisibility(View.GONE);
+		if (mShowCheckboxes) {
+			h.checkBox.setChecked(!App.actions().isBlacklisted(info));
 		} else {
-			if (PreferenceManager
-					.getDefaultSharedPreferences(vg.getContext())
-					.getStringSet("blacklist", new HashSet<String>())
-					.contains(info.id)) {
-				h.checkBox.setChecked(false);
-			} else {
-				h.checkBox.setChecked(true);
-			}
+			h.checkBox.setVisibility(View.GONE);
 		}
 		return v;
 	}
