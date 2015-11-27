@@ -1,7 +1,6 @@
 package trikita.hut;
 
-import android.app.PendingIntent;
-import android.content.ComponentName;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -19,7 +18,6 @@ import android.net.Uri;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import trikita.hut.apps.Apps;
@@ -31,20 +29,31 @@ public class ActionsProvider {
         public final Drawable icon;
 		public final String title;
         public final String description;
-		public final PendingIntent primaryAction;
-		public final PendingIntent settingsAction;
+		public final String actionUri;
+		public final String settingsUri;
 
-        public ActionInfo(Context c, String id, Drawable icon, String title, String description, String actionUri, String settingsUri) throws URISyntaxException {
+        public ActionInfo(String id, Drawable icon, String title, String description, String actionUri, String settingsUri) {
             this.id = id;
             this.icon = icon;
             this.title = title;
             this.description = description;
-            this.primaryAction = PendingIntent.getActivity(c, 0,
-                    Intent.parseUri(actionUri, Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED),
-                    PendingIntent.FLAG_UPDATE_CURRENT);
-            this.settingsAction = PendingIntent.getActivity(c, 0,
-                    Intent.parseUri(settingsUri, Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED),
-                    PendingIntent.FLAG_UPDATE_CURRENT);
+            this.actionUri = actionUri;
+            this.settingsUri = settingsUri;
+        }
+        public void run(Activity a) {
+            run(a, actionUri);
+        }
+        public void settings(Activity a) {
+            run(a, settingsUri);
+        }
+        private void run(Activity a, String uri) {
+            if (uri != null) {
+                try {
+                    a.startActivity(Intent.parseUri(uri, Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED));
+                } catch (URISyntaxException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -62,6 +71,13 @@ public class ActionsProvider {
     };
 
     private final static String PREFS_BLACKLIST = "blacklist";
+    private final static String PREFS_SHORTCUTS = "shortcuts";
+
+    public final static String SHORTCUT_SWIPE_LEFT = "swipe-left";
+    public final static String SHORTCUT_SWIPE_RIGHT = "swipe-right";
+    public final static String SHORTCUT_SWIPE_UP = "swipe-up";
+    public final static String SHORTCUT_SWIPE_DOWN = "swipe-down";
+    public final static String SHORTCUT_TAP = "tap";
 
     private Context mContext;
     private List<ActionInfo> mCache = null;
@@ -105,6 +121,29 @@ public class ActionsProvider {
         return filtered;
     }
 
+    public synchronized List<ActionInfo> getShortcutActions() {
+        List<ActionInfo> shortcuts = new ArrayList<>();
+        shortcuts.addAll(getAll());
+        shortcuts.add(0, new ActionInfo("trikita.hut/trikita.hut.do_nothing",
+                null,
+                "Do nothing",
+                null,
+                null,
+                null));
+        return shortcuts;
+    }
+
+    public void setShortcut(String shortcut, String actionUri) {
+        mContext.getSharedPreferences(PREFS_SHORTCUTS, 0).edit()
+                .putString(shortcut, actionUri)
+                .apply();
+    }
+
+    public ActionInfo getShortcut(String shortcut) {
+        String uri = mContext.getSharedPreferences(PREFS_SHORTCUTS, 0).getString(shortcut, null);
+        return new ActionInfo(null, null, null, null, uri, null);
+    }
+
     private List<ActionInfo> getActions(Context context, Uri uri) {
         ArrayList<ActionInfo> actions = new ArrayList<>();
         Cursor c = context.getContentResolver().query(uri, CURSOR_COLUMNS, null, null, null);
@@ -113,18 +152,13 @@ public class ActionsProvider {
         }
         c.moveToFirst();
         while (c.moveToNext()) {
-            try {
-                ActionInfo action = new ActionInfo(context,
-                        c.getString(c.getColumnIndex(COLUMN_ID)),
-                        scaleIcon(context, c.getBlob(c.getColumnIndex(COLUMN_ICON))),
-                        c.getString(c.getColumnIndex(COLUMN_TITLE)),
-                        c.getString(c.getColumnIndex(COLUMN_DESCRIPTION)),
-                        c.getString(c.getColumnIndex(COLUMN_ACTION)),
-                        c.getString(c.getColumnIndex(COLUMN_SETTINGS)));
-                actions.add(action);
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
-            }
+            ActionInfo action = new ActionInfo(c.getString(c.getColumnIndex(COLUMN_ID)),
+                    scaleIcon(context, c.getBlob(c.getColumnIndex(COLUMN_ICON))),
+                    c.getString(c.getColumnIndex(COLUMN_TITLE)),
+                    c.getString(c.getColumnIndex(COLUMN_DESCRIPTION)),
+                    c.getString(c.getColumnIndex(COLUMN_ACTION)),
+                    c.getString(c.getColumnIndex(COLUMN_SETTINGS)));
+            actions.add(action);
         }
         c.close();
         return actions;

@@ -17,19 +17,50 @@
 		android:title="Launch on tap">
 		<intent
 			android:action="trikita.hut.intent.action.PICK"
-			android:data="hut://action/tap"
 			android:targetClass="trikita.hut.PickerActivity"
 			android:targetPackage="trikita.hut"
-			/>
+			>
+			<extra android:name="trikita.hut.intent.extra.SHORTCUT" android:value="tap" />
+		</intent>
 	</Preference>
 	<Preference
-		android:key="tap"
+		android:key="swipe-left"
 		android:title="Launch on swipe left">
 		<intent
 			android:action="trikita.hut.intent.action.PICK"
-			android:data="hut://action/left"
 			android:targetClass="trikita.hut.PickerActivity"
-			android:targetPackage="trikita.hut"
-			/>
+			android:targetPackage="trikita.hut">
+			<extra android:name="trikita.hut.intent.extra.SHORTCUT" android:value="swipe-left" />
+		</intent>
+	</Preference>
+	<Preference
+		android:key="swipe-right"
+		android:title="Launch on swipe right">
+		<intent
+			android:action="trikita.hut.intent.action.PICK"
+			android:targetClass="trikita.hut.PickerActivity"
+			android:targetPackage="trikita.hut">
+			<extra android:name="trikita.hut.intent.extra.SHORTCUT" android:value="swipe-right" />
+		</intent>
+	</Preference>
+	<Preference
+		android:key="swipe-up"
+		android:title="Launch on swipe up">
+		<intent
+			android:action="trikita.hut.intent.action.PICK"
+			android:targetClass="trikita.hut.PickerActivity"
+			android:targetPackage="trikita.hut">
+			<extra android:name="trikita.hut.intent.extra.SHORTCUT" android:value="swipe-up" />
+		</intent>
+	</Preference>
+	<Preference
+		android:key="swipe-down"
+		android:title="Launch on swipe down">
+		<intent
+			android:action="trikita.hut.intent.action.PICK"
+			android:targetClass="trikita.hut.PickerActivity"
+			android:targetPackage="trikita.hut">
+			<extra android:name="trikita.hut.intent.extra.SHORTCUT" android:value="swipe-down" />
+		</intent>
 	</Preference>
 </PreferenceScreen>

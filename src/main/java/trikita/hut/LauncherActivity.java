@@ -48,7 +48,6 @@ public class LauncherActivity extends Activity {
 
 			@Override
 			public boolean onDown(MotionEvent e) {
-				Log.d("LauncherActivity", "onDown");
 				return true;
 			}
 
@@ -58,16 +57,16 @@ public class LauncherActivity extends Activity {
 				int dy = (int) (e2.getY() - e1.getY());
 				if (Math.abs(dx) > MIN_SWIPE_DISTANCE && Math.abs(velocityX) > MAX_VELOCITY_RATIO*Math.abs(velocityY)) {
 					if (velocityX > 0) {
-						Log.d("LauncherActivity", "on swipe right");
+						App.actions().getShortcut(ActionsProvider.SHORTCUT_SWIPE_RIGHT).run(LauncherActivity.this);
 					} else {
-						Log.d("LauncherActivity", "on swipe left");
+						App.actions().getShortcut(ActionsProvider.SHORTCUT_SWIPE_LEFT).run(LauncherActivity.this);
 					}
 					return true;
 				} else if (Math.abs(dy) > MIN_SWIPE_DISTANCE && Math.abs(velocityY) > MAX_VELOCITY_RATIO*Math.abs(velocityX)) {
 					if (velocityY > 0) {
-						Log.d("LauncherActivity", "on swipe down");
+						App.actions().getShortcut(ActionsProvider.SHORTCUT_SWIPE_DOWN).run(LauncherActivity.this);
 					} else {
-						Log.d("LauncherActivity", "on swipe up");
+						App.actions().getShortcut(ActionsProvider.SHORTCUT_SWIPE_UP).run(LauncherActivity.this);
 					}
 					return true;
 				}
@@ -76,7 +75,7 @@ public class LauncherActivity extends Activity {
 
 			@Override
 			public boolean onSingleTapUp(MotionEvent e) {
-				Log.d("LauncherActivity", "onSingleTapUp");
+				App.actions().getShortcut(ActionsProvider.SHORTCUT_TAP).run(LauncherActivity.this);
 				return true;
 			}
 
@@ -89,7 +88,7 @@ public class LauncherActivity extends Activity {
 
 		mActionsAdapter = new ActionsAdapter(App.actions().getAll(), false);
 		mAppsListView.setAdapter(mActionsAdapter);
-		mDrawerView.setVisibility(View.GONE);
+		mDrawerView.setVisibility(View.INVISIBLE);
 	}
 
 	@OnClick(R.id.btn_apps)
@@ -117,7 +116,7 @@ public class LauncherActivity extends Activity {
 		int cy = (mDrawerButton.getTop() + mDrawerButton.getBottom()) / 2;
 		int r = Math.max(mDrawerView.getWidth(), mDrawerView.getHeight());
 		if (show) {
-			mDrawerView.setVisibility(show ? View.VISIBLE : View.GONE);
+			mDrawerView.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
 			if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 				Animator anim =
 						ViewAnimationUtils.createCircularReveal(mDrawerView, cx, cy, 0, r);
@@ -151,23 +150,12 @@ public class LauncherActivity extends Activity {
 
 	@OnItemClick(R.id.list)
 	public void onItemClick(AdapterView<?> av, View v, int pos, long id) {
-		try {
-			mActionsAdapter.getItem(pos).primaryAction.send();
-		} catch (PendingIntent.CanceledException e) {
-			e.printStackTrace();
-		}
+		mActionsAdapter.getItem(pos).run(this);
 	}
 
 	@OnItemLongClick(R.id.list)
 	public boolean onItemLongClick(AdapterView<?> av, View v, int pos, long id) {
-		try {
-			ActionsProvider.ActionInfo action = mActionsAdapter.getItem(pos);
-			if (action.settingsAction != null) {
-				action.settingsAction.send();
-			}
-		} catch (PendingIntent.CanceledException e) {
-			e.printStackTrace();
-		}
+		mActionsAdapter.getItem(pos).settings(this);
 		return true;
 	}
 
