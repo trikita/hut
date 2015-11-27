@@ -176,8 +176,6 @@ public class LauncherActivity extends Activity {
 	public void onBackPressed() {
 		if (mDrawerShown) {
 			revealDrawer(false);
-		} else {
-			super.onBackPressed();
 		}
 	}
 }
