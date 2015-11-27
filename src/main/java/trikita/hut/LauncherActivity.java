@@ -8,6 +8,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewAnimationUtils;
@@ -85,6 +86,12 @@ public class LauncherActivity extends Activity {
 		mDrawerView.setVisibility(View.INVISIBLE);
 	}
 
+	@Override
+	protected void onResume() {
+		revealDrawer(false);
+		super.onResume();
+	}
+
 	@OnClick(R.id.btn_apps)
 	public void openDrawer() {
 		mAppsFilter.setText("");
@@ -152,6 +159,17 @@ public class LauncherActivity extends Activity {
 	@OnTextChanged(R.id.filter)
 	public void onFilterChanged(CharSequence s, int start, int before, int count) {
 		((ActionsAdapter) mAppsListView.getAdapter()).getFilter().filter(s.toString());
+	}
+
+	@Override
+	public boolean dispatchKeyEvent(KeyEvent event) {
+		Log.d("LauncherActivity", "dispatchKeyEvent: " + event);
+		if (event.getKeyCode() == KeyEvent.KEYCODE_HOME) {
+			if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled() && mDrawerShown) {
+			}
+			return true;
+		}
+		return super.dispatchKeyEvent(event);
 	}
 
 	@Override
