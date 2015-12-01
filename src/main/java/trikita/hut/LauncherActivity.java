@@ -89,7 +89,7 @@ public class LauncherActivity extends Activity {
 
 	@Override
 	protected void onResume() {
-		revealDrawer(false);
+		revealDrawer(false, false);
 		super.onResume();
 	}
 
@@ -98,7 +98,7 @@ public class LauncherActivity extends Activity {
 		mAppsFilter.setText("");
 		mAppsListView.setAdapter(new ActionsAdapter(App.actions().getWhitelisted(), false));
 		mAppsFilter.setVisibility(View.GONE);
-		revealDrawer(true);
+		revealDrawer(true, true);
 	}
 
 	@OnLongClick(R.id.btn_apps)
@@ -109,23 +109,23 @@ public class LauncherActivity extends Activity {
 		mAppsFilter.requestFocus();
 		InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
 		imm.showSoftInput(mAppsFilter, InputMethodManager.SHOW_IMPLICIT);
-		revealDrawer(true);
+		revealDrawer(true, true);
 		return true;
 	}
 
-	private void revealDrawer(boolean show) {
+	private void revealDrawer(boolean show, boolean animate) {
 		int cx = (mDrawerButton.getLeft() + mDrawerButton.getRight()) / 2;
 		int cy = (mDrawerButton.getTop() + mDrawerButton.getBottom()) / 2;
 		int r = Math.max(mDrawerView.getWidth(), mDrawerView.getHeight());
 		if (show) {
 			mDrawerView.setVisibility(View.VISIBLE);
-			if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			if (animate && android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 				Animator anim =
 						ViewAnimationUtils.createCircularReveal(mDrawerView, cx, cy, 0, r);
 				anim.start();
 			}
 		} else {
-			if (mDrawerView.isAttachedToWindow() &&
+			if (animate && mDrawerView.isAttachedToWindow() &&
 					android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 				Animator anim =
 						ViewAnimationUtils.createCircularReveal(mDrawerView, cx, cy, r, 0);
@@ -152,11 +152,13 @@ public class LauncherActivity extends Activity {
 	@OnItemClick(R.id.list)
 	public void onItemClick(AdapterView<?> av, View v, int pos, long id) {
 		((ActionsAdapter) av.getAdapter()).getItem(pos).run(this);
+		revealDrawer(false, false);
 	}
 
 	@OnItemLongClick(R.id.list)
 	public boolean onItemLongClick(AdapterView<?> av, View v, int pos, long id) {
 		((ActionsAdapter) av.getAdapter()).getItem(pos).settings(this);
+		revealDrawer(false, false);
 		return true;
 	}
 
@@ -179,7 +181,7 @@ public class LauncherActivity extends Activity {
 	@Override
 	public void onBackPressed() {
 		if (mDrawerShown) {
-			revealDrawer(false);
+			revealDrawer(false, true);
 		}
 	}
 }
