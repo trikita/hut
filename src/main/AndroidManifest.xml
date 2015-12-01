@@ -34,6 +34,17 @@
 
 		<activity android:name=".SettingsActivity" />
 
+		<receiver android:name=".UpdatePluginsReceiver" android:exported="true" android:enabled="true">
+			<intent-filter>
+				<action android:name="trikita.hut.action.PLUGIN_CHANGED" />
+				<action android:name="android.intent.action.PACKAGE_ADDED" />
+				<action android:name="android.intent.action.PACKAGE_REMOVED" />
+				<action android:name="android.intent.action.PACKAGE_CHANGED" />
+				<data android:scheme="file" />
+				<data android:scheme="package" />
+			</intent-filter>
+		</receiver>
+
 		<provider
 			android:authorities="trikita.hut.apps"
 			android:name=".apps.Apps" />

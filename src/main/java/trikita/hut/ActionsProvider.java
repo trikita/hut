@@ -93,7 +93,7 @@ public class ActionsProvider {
         mContext = context;
     }
 
-	private synchronized void refresh() {
+	public synchronized void refresh() {
         List<ActionInfo> actions = new ArrayList<>();
         for (PackageInfo pack : mContext.getPackageManager().getInstalledPackages(PackageManager.GET_PROVIDERS)) {
             ProviderInfo[] providers = pack.providers;
