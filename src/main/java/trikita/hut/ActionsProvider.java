@@ -8,6 +8,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ProviderInfo;
 import android.database.Cursor;
+import android.database.MatrixCursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -62,13 +63,13 @@ public class ActionsProvider {
         }
     }
 
-    private final static String COLUMN_ID = "id";
-    private final static String COLUMN_ICON = "icon";
-    private final static String COLUMN_TITLE = "title";
-    private final static String COLUMN_DESCRIPTION = "description";
+    public final static String COLUMN_ID = "_id";
+    public final static String COLUMN_ICON = "icon";
+    public final static String COLUMN_TITLE = "title";
+    public final static String COLUMN_DESCRIPTION = "description";
 
-    private final static String COLUMN_ACTION = "action";
-    private final static String COLUMN_SETTINGS = "settings";
+    public final static String COLUMN_ACTION = "action";
+    public final static String COLUMN_SETTINGS = "settings";
 
     public final static String[] CURSOR_COLUMNS = new String[]{
             COLUMN_ID, COLUMN_ICON, COLUMN_TITLE, COLUMN_DESCRIPTION,
@@ -188,6 +189,31 @@ public class ActionsProvider {
         }
         c.close();
         return actions;
+    }
+
+    public Cursor query(String query) {
+        return cursorFromList(getAll(), query);
+    }
+
+    public Cursor favourites() {
+        return cursorFromList(getWhitelisted(), "");
+    }
+
+    private Cursor cursorFromList(List<ActionInfo> actions, String query) {
+        query = query.toLowerCase();
+        MatrixCursor cursor = new MatrixCursor(ActionsProvider.CURSOR_COLUMNS);
+        for (ActionInfo action : actions) {
+            if (action.title != null && action.title.toLowerCase().contains(query)) {
+                MatrixCursor.RowBuilder row = cursor.newRow();
+                row.add(action.id.hashCode());
+                row.add(action.iconUri);
+                row.add(action.title);
+                row.add(action.description);
+                row.add(action.actionUri);
+                row.add(action.settingsUri);
+            }
+        }
+        return cursor;
     }
 }
 

@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ActionsAdapter extends BaseAdapter implements Filterable {
+
 	private final List<ActionsProvider.ActionInfo> mOriginalList;
 	private List<ActionsProvider.ActionInfo> mFilteredList;
 

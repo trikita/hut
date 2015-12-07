@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,8 +15,14 @@ import android.view.View;
 import android.view.ViewAnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
+import android.widget.CursorAdapter;
 import android.widget.EditText;
+import android.widget.FilterQueryProvider;
+import android.widget.Filterable;
 import android.widget.GridView;
+import android.widget.SimpleCursorAdapter;
+
+import java.net.URISyntaxException;
 
 import butterknife.*;
 
@@ -83,7 +90,6 @@ public class LauncherActivity extends Activity {
 			}
 		});
 
-		mAppsListView.setAdapter(new ActionsAdapter(App.actions().getAll(), false));
 		mDrawerView.setVisibility(View.INVISIBLE);
 	}
 
@@ -96,14 +102,24 @@ public class LauncherActivity extends Activity {
 	@OnClick(R.id.btn_apps)
 	public void openDrawer() {
 		mAppsFilter.setText("");
-		mAppsListView.setAdapter(new ActionsAdapter(App.actions().getWhitelisted(), false));
+		mAppsListView.setAdapter(new SimpleCursorAdapter(this, R.layout.item, App.actions().favourites(),
+				new String[]{ActionsProvider.COLUMN_ICON, ActionsProvider.COLUMN_TITLE},
+				new int[]{R.id.icon, R.id.label}));
 		mAppsFilter.setVisibility(View.GONE);
 		revealDrawer(true, true);
 	}
 
 	@OnLongClick(R.id.btn_apps)
 	public boolean openDrawerWithFilter() {
-		mAppsListView.setAdapter(new ActionsAdapter(App.actions().getAll(), false));
+		SimpleCursorAdapter	adapter = new SimpleCursorAdapter(this, R.layout.item, App.actions().query(""),
+				new String[]{ActionsProvider.COLUMN_ICON, ActionsProvider.COLUMN_TITLE},
+				new int[]{R.id.icon, R.id.label});
+		adapter.setFilterQueryProvider(new FilterQueryProvider() {
+			public Cursor runQuery(CharSequence constraint) {
+				return App.actions().query(constraint.toString());
+			}
+		});
+		mAppsListView.setAdapter(adapter);
 		mAppsFilter.setText("");
 		mAppsFilter.setVisibility(View.VISIBLE);
 		mAppsFilter.requestFocus();
@@ -151,20 +167,36 @@ public class LauncherActivity extends Activity {
 
 	@OnItemClick(R.id.list)
 	public void onItemClick(AdapterView<?> av, View v, int pos, long id) {
-		((ActionsAdapter) av.getAdapter()).getItem(pos).run(this);
+		Cursor cursor = (Cursor) av.getAdapter().getItem(pos);
+		run(cursor.getString(cursor.getColumnIndex(ActionsProvider.COLUMN_ACTION)));
 		revealDrawer(false, false);
 	}
 
 	@OnItemLongClick(R.id.list)
 	public boolean onItemLongClick(AdapterView<?> av, View v, int pos, long id) {
-		((ActionsAdapter) av.getAdapter()).getItem(pos).settings(this);
+		Cursor cursor = (Cursor) av.getAdapter().getItem(pos);
+		run(cursor.getString(cursor.getColumnIndex(ActionsProvider.COLUMN_SETTINGS)));
 		revealDrawer(false, false);
 		return true;
 	}
 
+	private void run(String intentUri) {
+		if (intentUri != null) {
+			try {
+				startActivity(Intent.parseUri(intentUri, 0)
+						.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED));
+			} catch (URISyntaxException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	@OnTextChanged(R.id.filter)
 	public void onFilterChanged(CharSequence s, int start, int before, int count) {
-		((ActionsAdapter) mAppsListView.getAdapter()).getFilter().filter(s.toString());
+		Filterable filterable = ((Filterable) mAppsListView.getAdapter());
+		if (filterable != null) {
+			filterable.getFilter().filter(s.toString());
+		}
 	}
 
 	@Override
