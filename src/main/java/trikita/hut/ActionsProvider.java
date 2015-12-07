@@ -30,15 +30,15 @@ public class ActionsProvider {
 
     public static class ActionInfo {
         public final String id;
-        public final Drawable icon;
+        public final String iconUri;
 		public final String title;
         public final String description;
 		public final String actionUri;
 		public final String settingsUri;
 
-        public ActionInfo(String id, Drawable icon, String title, String description, String actionUri, String settingsUri) {
+        public ActionInfo(String id, String iconUri, String title, String description, String actionUri, String settingsUri) {
             this.id = id;
-            this.icon = icon;
+            this.iconUri = iconUri;
             this.title = title;
             this.description = description;
             this.actionUri = actionUri;
@@ -179,7 +179,7 @@ public class ActionsProvider {
         c.moveToFirst();
         while (c.moveToNext()) {
             ActionInfo action = new ActionInfo(c.getString(c.getColumnIndex(COLUMN_ID)),
-                    scaleIcon(context, Base64.decode(c.getString(c.getColumnIndex(COLUMN_ICON)), 0)),
+                    c.getString(c.getColumnIndex(COLUMN_ICON)),
                     c.getString(c.getColumnIndex(COLUMN_TITLE)),
                     c.getString(c.getColumnIndex(COLUMN_DESCRIPTION)),
                     c.getString(c.getColumnIndex(COLUMN_ACTION)),
@@ -188,38 +188,6 @@ public class ActionsProvider {
         }
         c.close();
         return actions;
-    }
-
-    private Drawable scaleIcon(Context c, byte[] bytes) {
-        Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-        Drawable icon = new BitmapDrawable(c.getResources(), bmp);
-        Rect mOldBounds = new Rect();
-        int iconSize = (int)
-                c.getResources().getDimension(android.R.dimen.app_icon_size);
-        int iconWidth = icon.getIntrinsicWidth();
-        int iconHeight = icon.getIntrinsicHeight();
-
-        if (iconSize > 0 && (iconSize < iconWidth || iconSize < iconHeight)) {
-            float ratio = (float) iconWidth / iconHeight;
-
-            if (iconWidth > iconHeight) {
-                iconHeight = (int) (iconSize / ratio);
-            } else if (iconHeight > iconWidth) {
-                iconWidth = (int) (iconSize * ratio);
-            }
-
-            Bitmap.Config bc = icon.getOpacity() != PixelFormat.OPAQUE ? Bitmap.Config.ARGB_8888 : Bitmap.Config.RGB_565;
-            bmp = Bitmap.createBitmap(iconWidth, iconHeight, bc);
-            Canvas canvas = new Canvas(bmp);
-            canvas.setDrawFilter(new PaintFlagsDrawFilter(Paint.DITHER_FLAG, 0));
-
-            mOldBounds.set(icon.getBounds());
-            icon.setBounds(0, 0, iconWidth, iconHeight);
-            icon.draw(canvas);
-            icon.setBounds(mOldBounds);
-            icon = new BitmapDrawable(c.getResources(), bmp);
-        }
-        return icon;
     }
 }
 

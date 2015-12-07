@@ -48,10 +48,7 @@ public class Apps extends ContentProvider {
 
             // id, icon, title, description
             row.add(component);
-            Bitmap bitmap = drawableToBitmap(info.loadIcon(pm));
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
-            row.add(Base64.encodeToString(baos.toByteArray(), 0));
+            row.add(Uri.parse("android.resource://" + info.activityInfo.applicationInfo.packageName + "/" + info.activityInfo.applicationInfo.icon));
             row.add(info.loadLabel(pm).toString());
             row.add(null);
 

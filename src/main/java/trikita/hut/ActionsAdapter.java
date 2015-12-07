@@ -1,6 +1,7 @@
 package trikita.hut;
 
 import android.content.Context;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -79,7 +80,9 @@ public class ActionsAdapter extends BaseAdapter implements Filterable {
 		}
 
 		ViewHolder h = (ViewHolder) v.getTag();
-		h.imageView.setImageDrawable(info.icon);
+		try {
+			h.imageView.setImageURI(Uri.parse(info.iconUri));
+		} catch (Exception e) {}
 		h.textView.setText(info.title);
 
 		if (mShowCheckboxes) {
