@@ -47,7 +47,7 @@ public class Apps extends ContentProvider {
             String component = info.activityInfo.applicationInfo.packageName + "/" + info.activityInfo.name;
 
             // id, icon, title, description
-            row.add(component);
+            row.add(component.hashCode());
             row.add(Uri.parse("android.resource://" + info.activityInfo.applicationInfo.packageName + "/" + info.activityInfo.applicationInfo.icon));
             row.add(info.loadLabel(pm).toString());
             row.add(null);

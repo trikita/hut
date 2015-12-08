@@ -1,14 +1,19 @@
 package trikita.hut;
 
 import android.app.Activity;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.FilterQueryProvider;
 import android.widget.GridView;
+import android.widget.ListAdapter;
+import android.widget.SimpleCursorAdapter;
 
 public class PickerActivity extends Activity {
 	private ActionsAdapter mActionsAdapter;
@@ -20,26 +25,55 @@ public class PickerActivity extends Activity {
 		GridView actionsView = ((GridView) findViewById(R.id.list));
 
 		String action = getIntent().getAction();
+		final SimpleCursorAdapter adapter;
 		switch (action) {
 			case "trikita.hut.intent.action.BLACKLIST":
-				mActionsAdapter = new ActionsAdapter(App.actions().getAll(), true);
+				adapter = new SimpleCursorAdapter(this, R.layout.item, App.actions().query(""),
+						new String[]{ActionsProvider.COLUMN_ICON, ActionsProvider.COLUMN_TITLE, ActionsProvider.COLUMN_ID},
+						new int[]{R.id.icon, R.id.label, R.id.check});
+				adapter.setFilterQueryProvider(new FilterQueryProvider() {
+					public Cursor runQuery(CharSequence constraint) {
+						return App.actions().query(constraint.toString());
+					}
+				});
+				adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+					public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
+						System.out.println("col" + columnIndex + " " + cursor.getString(columnIndex));
+						if (columnIndex == cursor.getColumnIndex(ActionsProvider.COLUMN_ID)) {
+							CheckBox checkBox = (CheckBox) view;
+							checkBox.setVisibility(View.VISIBLE);
+							checkBox.setChecked(!App.actions()
+									.isBlacklisted(cursor.getLong(columnIndex)));
+							return true;
+						}
+						return false;
+					}
+				});
 				actionsView.setOnItemClickListener(new AbsListView.OnItemClickListener() {
 					public void onItemClick(AdapterView<?> av, View v, int pos, long id) {
-						ActionsAdapter.ViewHolder h = (ActionsAdapter.ViewHolder) v.getTag();
-						ActionsProvider.ActionInfo info = mActionsAdapter.getItem(pos);
-						h.checkBox.toggle();
-						App.actions().blacklist(info, !h.checkBox.isChecked());
+						System.out.println("onItemClick: " + adapter.getItemId(pos));
+						// TODO:
+
+						App.actions().blacklist(adapter.getItemId(pos),
+								!App.actions().isBlacklisted(adapter.getItemId(pos)));
+						adapter.notifyDataSetChanged();
 					}
 				});
 				break;
 			case "trikita.hut.intent.action.PICK":
-				mActionsAdapter = new ActionsAdapter(App.actions().getShortcutActions(), false);
+				adapter = new SimpleCursorAdapter(this, R.layout.item, App.actions().shortcuts(""),
+						new String[]{ActionsProvider.COLUMN_ICON, ActionsProvider.COLUMN_TITLE},
+						new int[]{R.id.icon, R.id.label});
+				adapter.setFilterQueryProvider(new FilterQueryProvider() {
+					public Cursor runQuery(CharSequence constraint) {
+						return App.actions().shortcuts(constraint.toString());
+					}
+				});
 				actionsView.setOnItemClickListener(new AbsListView.OnItemClickListener() {
 					public void onItemClick(AdapterView<?> av, View v, int pos, long id) {
-						ActionsProvider.ActionInfo info = mActionsAdapter.getItem(pos);
-						System.out.println("Selected " + info.actionUri);
+						Cursor cursor = (Cursor) av.getAdapter().getItem(pos);
 						App.actions().setShortcut(getIntent().getStringExtra("trikita.hut.intent.extra.SHORTCUT"),
-								info.actionUri);
+								cursor.getString(cursor.getColumnIndex(ActionsProvider.COLUMN_ACTION)));
 						finish();
 					}
 				});
@@ -48,15 +82,14 @@ public class PickerActivity extends Activity {
 				finish();
 				return;
 		}
-
-		actionsView.setAdapter(mActionsAdapter);
+		actionsView.setAdapter(adapter);
 
 		EditText editText = ((EditText) findViewById(R.id.filter));
 		editText.addTextChangedListener(new TextWatcher() {
 			public void beforeTextChanged(CharSequence s, int a, int b, int c) {}
 			public void afterTextChanged(Editable e) {}
 			public void onTextChanged(CharSequence s, int start, int before, int n) {
-				mActionsAdapter.getFilter().filter(s);
+				adapter.getFilter().filter(s);
 			}
 		});
 	}

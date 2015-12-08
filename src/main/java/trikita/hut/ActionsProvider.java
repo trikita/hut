@@ -30,36 +30,20 @@ import java.util.List;
 public class ActionsProvider {
 
     public static class ActionInfo {
-        public final String id;
+        public final long id;
         public final String iconUri;
 		public final String title;
         public final String description;
 		public final String actionUri;
 		public final String settingsUri;
 
-        public ActionInfo(String id, String iconUri, String title, String description, String actionUri, String settingsUri) {
+        public ActionInfo(long id, String iconUri, String title, String description, String actionUri, String settingsUri) {
             this.id = id;
             this.iconUri = iconUri;
             this.title = title;
             this.description = description;
             this.actionUri = actionUri;
             this.settingsUri = settingsUri;
-        }
-        public void run(Activity a) {
-            run(a, actionUri);
-        }
-        public void settings(Activity a) {
-            run(a, settingsUri);
-        }
-        private void run(Activity a, String uri) {
-            if (uri != null) {
-                try {
-                    a.startActivity(Intent.parseUri(uri, 0)
-                            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED));
-                } catch (URISyntaxException e) {
-                    e.printStackTrace();
-                }
-            }
         }
     }
 
@@ -117,18 +101,18 @@ public class ActionsProvider {
         mCache = actions;
 	}
 
-    public void blacklist(ActionInfo action, boolean state) {
+    public void blacklist(long actionId, boolean state) {
         SharedPreferences.Editor editor = mContext.getSharedPreferences(PREFS_BLACKLIST, 0).edit();
         if (state) {
-            editor.putBoolean(action.id, true);
+            editor.putBoolean(new Long(actionId).toString(), true);
         } else {
-            editor.remove(action.id);
+            editor.remove(new Long(actionId).toString());
         }
         editor.apply();
     }
 
-    public boolean isBlacklisted(ActionInfo action) {
-        return mContext.getSharedPreferences(PREFS_BLACKLIST, 0).getBoolean(action.id, false);
+    public boolean isBlacklisted(long id) {
+        return mContext.getSharedPreferences(PREFS_BLACKLIST, 0).getBoolean(new Long(id).toString(), false);
     }
 
     public synchronized List<ActionInfo> getAll() {
@@ -141,7 +125,7 @@ public class ActionsProvider {
     public synchronized List<ActionInfo> getWhitelisted() {
         List<ActionInfo> filtered = new ArrayList<>();
         for (ActionInfo app : getAll()) {
-            if (!isBlacklisted(app)) {
+            if (!isBlacklisted(app.id)) {
                 filtered.add(app);
             }
         }
@@ -151,7 +135,7 @@ public class ActionsProvider {
     public synchronized List<ActionInfo> getShortcutActions() {
         List<ActionInfo> shortcuts = new ArrayList<>();
         shortcuts.addAll(getAll());
-        shortcuts.add(0, new ActionInfo("trikita.hut/trikita.hut.do_nothing",
+        shortcuts.add(0, new ActionInfo(-1,
                 null,
                 "Do nothing",
                 null,
@@ -168,7 +152,7 @@ public class ActionsProvider {
 
     public ActionInfo getShortcut(String shortcut) {
         String uri = mContext.getSharedPreferences(PREFS_SHORTCUTS, 0).getString(shortcut, null);
-        return new ActionInfo(null, null, null, null, uri, null);
+        return new ActionInfo(-1, null, null, null, uri, null);
     }
 
     private List<ActionInfo> getActions(Context context, Uri uri) {
@@ -179,7 +163,7 @@ public class ActionsProvider {
         }
         c.moveToFirst();
         while (c.moveToNext()) {
-            ActionInfo action = new ActionInfo(c.getString(c.getColumnIndex(COLUMN_ID)),
+            ActionInfo action = new ActionInfo(c.getLong(c.getColumnIndex(COLUMN_ID)),
                     c.getString(c.getColumnIndex(COLUMN_ICON)),
                     c.getString(c.getColumnIndex(COLUMN_TITLE)),
                     c.getString(c.getColumnIndex(COLUMN_DESCRIPTION)),
@@ -199,13 +183,17 @@ public class ActionsProvider {
         return cursorFromList(getWhitelisted(), "");
     }
 
+    public Cursor shortcuts(String query) {
+        return cursorFromList(getShortcutActions(), query);
+    }
+
     private Cursor cursorFromList(List<ActionInfo> actions, String query) {
         query = query.toLowerCase();
-        MatrixCursor cursor = new MatrixCursor(ActionsProvider.CURSOR_COLUMNS);
+        MatrixCursor cursor = new MatrixCursor(CURSOR_COLUMNS);
         for (ActionInfo action : actions) {
             if (action.title != null && action.title.toLowerCase().contains(query)) {
                 MatrixCursor.RowBuilder row = cursor.newRow();
-                row.add(action.id.hashCode());
+                row.add(action.id);
                 row.add(action.iconUri);
                 row.add(action.title);
                 row.add(action.description);

@@ -61,16 +61,16 @@ public class LauncherActivity extends Activity {
 				int dy = (int) (e2.getY() - e1.getY());
 				if (Math.abs(dx) > MIN_SWIPE_DISTANCE && Math.abs(velocityX) > MAX_VELOCITY_RATIO*Math.abs(velocityY)) {
 					if (velocityX > 0) {
-						App.actions().getShortcut(ActionsProvider.SHORTCUT_SWIPE_RIGHT).run(LauncherActivity.this);
+						run(App.actions().getShortcut(ActionsProvider.SHORTCUT_SWIPE_RIGHT).actionUri);
 					} else {
-						App.actions().getShortcut(ActionsProvider.SHORTCUT_SWIPE_LEFT).run(LauncherActivity.this);
+						run(App.actions().getShortcut(ActionsProvider.SHORTCUT_SWIPE_LEFT).actionUri);
 					}
 					return true;
 				} else if (Math.abs(dy) > MIN_SWIPE_DISTANCE && Math.abs(velocityY) > MAX_VELOCITY_RATIO*Math.abs(velocityX)) {
 					if (velocityY > 0) {
-						App.actions().getShortcut(ActionsProvider.SHORTCUT_SWIPE_DOWN).run(LauncherActivity.this);
+						run(App.actions().getShortcut(ActionsProvider.SHORTCUT_SWIPE_DOWN).actionUri);
 					} else {
-						App.actions().getShortcut(ActionsProvider.SHORTCUT_SWIPE_UP).run(LauncherActivity.this);
+						run(App.actions().getShortcut(ActionsProvider.SHORTCUT_SWIPE_UP).actionUri);
 					}
 					return true;
 				}
@@ -79,7 +79,7 @@ public class LauncherActivity extends Activity {
 
 			@Override
 			public boolean onSingleTapUp(MotionEvent e) {
-				App.actions().getShortcut(ActionsProvider.SHORTCUT_TAP).run(LauncherActivity.this);
+				run(App.actions().getShortcut(ActionsProvider.SHORTCUT_TAP).actionUri);
 				return true;
 			}
 

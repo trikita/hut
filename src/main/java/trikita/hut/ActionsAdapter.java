@@ -87,7 +87,7 @@ public class ActionsAdapter extends BaseAdapter implements Filterable {
 		h.textView.setText(info.title);
 
 		if (mShowCheckboxes) {
-			h.checkBox.setChecked(!App.actions().isBlacklisted(info));
+			h.checkBox.setChecked(!App.actions().isBlacklisted(info.id));
 		} else {
 			h.checkBox.setVisibility(View.GONE);
 		}
