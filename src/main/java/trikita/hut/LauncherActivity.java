@@ -61,16 +61,16 @@ public class LauncherActivity extends Activity {
 				int dy = (int) (e2.getY() - e1.getY());
 				if (Math.abs(dx) > MIN_SWIPE_DISTANCE && Math.abs(velocityX) > MAX_VELOCITY_RATIO*Math.abs(velocityY)) {
 					if (velocityX > 0) {
-						run(App.actions().getShortcut(ActionsProvider.SHORTCUT_SWIPE_RIGHT).actionUri);
+						run(App.actions().getShortcutUri(ActionsProvider.SHORTCUT_SWIPE_RIGHT));
 					} else {
-						run(App.actions().getShortcut(ActionsProvider.SHORTCUT_SWIPE_LEFT).actionUri);
+						run(App.actions().getShortcutUri(ActionsProvider.SHORTCUT_SWIPE_LEFT));
 					}
 					return true;
 				} else if (Math.abs(dy) > MIN_SWIPE_DISTANCE && Math.abs(velocityY) > MAX_VELOCITY_RATIO*Math.abs(velocityX)) {
 					if (velocityY > 0) {
-						run(App.actions().getShortcut(ActionsProvider.SHORTCUT_SWIPE_DOWN).actionUri);
+						run(App.actions().getShortcutUri(ActionsProvider.SHORTCUT_SWIPE_DOWN));
 					} else {
-						run(App.actions().getShortcut(ActionsProvider.SHORTCUT_SWIPE_UP).actionUri);
+						run(App.actions().getShortcutUri(ActionsProvider.SHORTCUT_SWIPE_UP));
 					}
 					return true;
 				}
@@ -79,7 +79,7 @@ public class LauncherActivity extends Activity {
 
 			@Override
 			public boolean onSingleTapUp(MotionEvent e) {
-				run(App.actions().getShortcut(ActionsProvider.SHORTCUT_TAP).actionUri);
+				run(App.actions().getShortcutUri(ActionsProvider.SHORTCUT_TAP));
 				return true;
 			}
 
@@ -95,32 +95,22 @@ public class LauncherActivity extends Activity {
 
 	@Override
 	protected void onResume() {
-		revealDrawer(false, false);
 		super.onResume();
+		revealDrawer(false, true);
 	}
 
 	@OnClick(R.id.btn_apps)
 	public void openDrawer() {
 		mAppsFilter.setText("");
-		mAppsListView.setAdapter(new SimpleCursorAdapter(this, R.layout.item, App.actions().favourites(),
-				new String[]{ActionsProvider.COLUMN_ICON, ActionsProvider.COLUMN_TITLE},
-				new int[]{R.id.icon, R.id.label}));
+		mAppsListView.setAdapter(ActionsAdapter.create(this, ActionsProvider.Category.FAVOURITES, null));
 		mAppsFilter.setVisibility(View.GONE);
 		revealDrawer(true, true);
 	}
 
 	@OnLongClick(R.id.btn_apps)
 	public boolean openDrawerWithFilter() {
-		SimpleCursorAdapter	adapter = new SimpleCursorAdapter(this, R.layout.item, App.actions().query(""),
-				new String[]{ActionsProvider.COLUMN_ICON, ActionsProvider.COLUMN_TITLE},
-				new int[]{R.id.icon, R.id.label});
-		adapter.setFilterQueryProvider(new FilterQueryProvider() {
-			public Cursor runQuery(CharSequence constraint) {
-				return App.actions().query(constraint.toString());
-			}
-		});
-		mAppsListView.setAdapter(adapter);
 		mAppsFilter.setText("");
+		mAppsListView.setAdapter(ActionsAdapter.create(this, ActionsProvider.Category.ALL, null));
 		mAppsFilter.setVisibility(View.VISIBLE);
 		mAppsFilter.requestFocus();
 		InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);

@@ -20,6 +20,8 @@ import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.util.Base64;
+import android.widget.ListAdapter;
+import android.widget.SimpleCursorAdapter;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -29,7 +31,13 @@ import java.util.List;
 
 public class ActionsProvider {
 
-    public static class ActionInfo {
+    public enum Category {
+        ALL,        // Every action provided by the plugins
+        FAVOURITES, // Actions selected manually into the whitelist
+        SHORTCUTS,  // All actions + builtin actions + "no action"
+    }
+
+    private static class ActionInfo {
         public final long id;
         public final String iconUri;
 		public final String title;
@@ -115,14 +123,14 @@ public class ActionsProvider {
         return mContext.getSharedPreferences(PREFS_BLACKLIST, 0).getBoolean(new Long(id).toString(), false);
     }
 
-    public synchronized List<ActionInfo> getAll() {
+    private List<ActionInfo> getAll() {
         if (mCache == null) {
             refresh();
         }
 		return mCache;
 	}
 
-    public synchronized List<ActionInfo> getWhitelisted() {
+    private List<ActionInfo> getWhitelisted() {
         List<ActionInfo> filtered = new ArrayList<>();
         for (ActionInfo app : getAll()) {
             if (!isBlacklisted(app.id)) {
@@ -132,7 +140,7 @@ public class ActionsProvider {
         return filtered;
     }
 
-    public synchronized List<ActionInfo> getShortcutActions() {
+    private List<ActionInfo> getShortcutActions() {
         List<ActionInfo> shortcuts = new ArrayList<>();
         shortcuts.addAll(getAll());
         shortcuts.add(0, new ActionInfo(-1,
@@ -150,9 +158,8 @@ public class ActionsProvider {
                 .apply();
     }
 
-    public ActionInfo getShortcut(String shortcut) {
-        String uri = mContext.getSharedPreferences(PREFS_SHORTCUTS, 0).getString(shortcut, null);
-        return new ActionInfo(-1, null, null, null, uri, null);
+    public String getShortcutUri(String shortcut) {
+        return mContext.getSharedPreferences(PREFS_SHORTCUTS, 0).getString(shortcut, null);
     }
 
     private List<ActionInfo> getActions(Context context, Uri uri) {
@@ -175,16 +182,13 @@ public class ActionsProvider {
         return actions;
     }
 
-    public Cursor query(String query) {
-        return cursorFromList(getAll(), query);
-    }
-
-    public Cursor favourites() {
-        return cursorFromList(getWhitelisted(), "");
-    }
-
-    public Cursor shortcuts(String query) {
-        return cursorFromList(getShortcutActions(), query);
+    public Cursor query(Category category, String query) {
+        switch (category) {
+            case ALL: return cursorFromList(getAll(), query);
+            case FAVOURITES: return cursorFromList(getWhitelisted(), query);
+            case SHORTCUTS: return cursorFromList(getShortcutActions(), query);
+        }
+        return null;
     }
 
     private Cursor cursorFromList(List<ActionInfo> actions, String query) {

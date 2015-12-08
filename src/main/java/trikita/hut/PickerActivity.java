@@ -1,6 +1,7 @@
 package trikita.hut;
 
 import android.app.Activity;
+import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.text.Editable;
@@ -9,6 +10,7 @@ import android.view.View;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
+import android.widget.CursorAdapter;
 import android.widget.EditText;
 import android.widget.FilterQueryProvider;
 import android.widget.GridView;
@@ -27,17 +29,8 @@ public class PickerActivity extends Activity {
 		final SimpleCursorAdapter adapter;
 		switch (action) {
 			case "trikita.hut.intent.action.BLACKLIST":
-				adapter = new SimpleCursorAdapter(this, R.layout.item, App.actions().query(""),
-						new String[]{ActionsProvider.COLUMN_ICON, ActionsProvider.COLUMN_TITLE, ActionsProvider.COLUMN_ID},
-						new int[]{R.id.icon, R.id.label, R.id.check});
-				adapter.setFilterQueryProvider(new FilterQueryProvider() {
-					public Cursor runQuery(CharSequence constraint) {
-						return App.actions().query(constraint.toString());
-					}
-				});
-				adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+				adapter = ActionsAdapter.create(this, ActionsProvider.Category.ALL, new SimpleCursorAdapter.ViewBinder() {
 					public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
-						System.out.println("col" + columnIndex + " " + cursor.getString(columnIndex));
 						if (columnIndex == cursor.getColumnIndex(ActionsProvider.COLUMN_ID)) {
 							CheckBox checkBox = (CheckBox) view;
 							checkBox.setVisibility(View.VISIBLE);
@@ -60,14 +53,7 @@ public class PickerActivity extends Activity {
 				});
 				break;
 			case "trikita.hut.intent.action.PICK":
-				adapter = new SimpleCursorAdapter(this, R.layout.item, App.actions().shortcuts(""),
-						new String[]{ActionsProvider.COLUMN_ICON, ActionsProvider.COLUMN_TITLE},
-						new int[]{R.id.icon, R.id.label});
-				adapter.setFilterQueryProvider(new FilterQueryProvider() {
-					public Cursor runQuery(CharSequence constraint) {
-						return App.actions().shortcuts(constraint.toString());
-					}
-				});
+				adapter = ActionsAdapter.create(this, ActionsProvider.Category.SHORTCUTS, null);
 				actionsView.setOnItemClickListener(new AbsListView.OnItemClickListener() {
 					public void onItemClick(AdapterView<?> av, View v, int pos, long id) {
 						Cursor cursor = (Cursor) av.getAdapter().getItem(pos);
