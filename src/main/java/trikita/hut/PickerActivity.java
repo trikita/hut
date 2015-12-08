@@ -16,7 +16,6 @@ import android.widget.ListAdapter;
 import android.widget.SimpleCursorAdapter;
 
 public class PickerActivity extends Activity {
-	private ActionsAdapter mActionsAdapter;
 
 	public void onCreate(Bundle b) {
 		super.onCreate(b);
