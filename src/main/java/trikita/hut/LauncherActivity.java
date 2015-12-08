@@ -23,17 +23,21 @@ import android.widget.GridView;
 import android.widget.SimpleCursorAdapter;
 
 import java.net.URISyntaxException;
+import java.util.Observable;
+import java.util.Observer;
 
 import butterknife.*;
 
-public class LauncherActivity extends Activity {
+public class LauncherActivity extends Activity implements Observer {
 
+	@Bind(R.id.background) View mBackground;
 	@Bind(R.id.drawer) View mDrawerView;
 	@Bind(R.id.btn_apps) View mDrawerButton;
 	@Bind(R.id.list) GridView mAppsListView;
 	@Bind(R.id.filter) EditText mAppsFilter;
 
 	private boolean mDrawerShown = false;
+	private ActionsProvider.Category mOpenedCategory = null;
 	private GestureDetector mGestureDetector;
 
 	@Override
@@ -91,6 +95,14 @@ public class LauncherActivity extends Activity {
 		});
 
 		mDrawerView.setVisibility(View.INVISIBLE);
+
+		App.actions().addObserver(this);
+	}
+
+	@Override
+	protected void onDestroy() {
+		App.actions().deleteObserver(this);
+		super.onDestroy();
 	}
 
 	@Override
@@ -102,7 +114,8 @@ public class LauncherActivity extends Activity {
 	@OnClick(R.id.btn_apps)
 	public void openDrawer() {
 		mAppsFilter.setText("");
-		mAppsListView.setAdapter(ActionsAdapter.create(this, ActionsProvider.Category.FAVOURITES, null));
+		mOpenedCategory = ActionsProvider.Category.FAVOURITES;
+		mAppsListView.setAdapter(ActionsAdapter.create(this, mOpenedCategory, null));
 		mAppsFilter.setVisibility(View.GONE);
 		revealDrawer(true, true);
 	}
@@ -110,27 +123,40 @@ public class LauncherActivity extends Activity {
 	@OnLongClick(R.id.btn_apps)
 	public boolean openDrawerWithFilter() {
 		mAppsFilter.setText("");
-		mAppsListView.setAdapter(ActionsAdapter.create(this, ActionsProvider.Category.ALL, null));
+		mOpenedCategory = ActionsProvider.Category.ALL;
+		mAppsListView.setAdapter(ActionsAdapter.create(this, mOpenedCategory, null));
 		mAppsFilter.setVisibility(View.VISIBLE);
 		mAppsFilter.requestFocus();
+		revealDrawer(true, true);
+		showKeyboard();
+		return true;
+	}
+
+	private void showKeyboard() {
 		InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
 		imm.showSoftInput(mAppsFilter, InputMethodManager.SHOW_IMPLICIT);
-		revealDrawer(true, true);
-		return true;
+	}
+
+	private void hideKeyboard() {
+		View v = getCurrentFocus();
+		if (v != null) {
+			InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+			imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+		}
 	}
 
 	private void revealDrawer(boolean show, boolean animate) {
 		int cx = (mDrawerButton.getLeft() + mDrawerButton.getRight()) / 2;
 		int cy = (mDrawerButton.getTop() + mDrawerButton.getBottom()) / 2;
-		int r = Math.max(mDrawerView.getWidth(), mDrawerView.getHeight());
-		if (show) {
+		int r = Math.max(mBackground.getWidth(), mBackground.getHeight());
+		if (show && !mDrawerShown) {
 			mDrawerView.setVisibility(View.VISIBLE);
 			if (animate && android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 				Animator anim =
 						ViewAnimationUtils.createCircularReveal(mDrawerView, cx, cy, 0, r);
 				anim.start();
 			}
-		} else {
+		} else if (mDrawerShown) {
 			if (animate && mDrawerView.isAttachedToWindow() &&
 					android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 				Animator anim =
@@ -145,6 +171,9 @@ public class LauncherActivity extends Activity {
 			} else {
 				mDrawerView.setVisibility(View.GONE);
 			}
+			hideKeyboard();
+		} else {
+			return;
 		}
         mDrawerButton.setVisibility(show ? View.GONE : View.VISIBLE);
         mDrawerShown = show;
@@ -156,17 +185,15 @@ public class LauncherActivity extends Activity {
 	}
 
 	@OnItemClick(R.id.list)
-	public void onItemClick(AdapterView<?> av, View v, int pos, long id) {
+	public void onItemClick(final AdapterView<?> av, View v, final int pos, long id) {
 		Cursor cursor = (Cursor) av.getAdapter().getItem(pos);
-		run(cursor.getString(cursor.getColumnIndex(ActionsProvider.COLUMN_ACTION)));
-		revealDrawer(false, false);
+		LauncherActivity.this.run(cursor.getString(cursor.getColumnIndex(ActionsProvider.COLUMN_ACTION)));
 	}
 
 	@OnItemLongClick(R.id.list)
 	public boolean onItemLongClick(AdapterView<?> av, View v, int pos, long id) {
 		Cursor cursor = (Cursor) av.getAdapter().getItem(pos);
 		run(cursor.getString(cursor.getColumnIndex(ActionsProvider.COLUMN_SETTINGS)));
-		revealDrawer(false, false);
 		return true;
 	}
 
@@ -175,6 +202,7 @@ public class LauncherActivity extends Activity {
 			try {
 				startActivity(Intent.parseUri(intentUri, 0)
 						.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED));
+				overridePendingTransition(0, 0);
 			} catch (URISyntaxException e) {
 				e.printStackTrace();
 			}
@@ -190,20 +218,16 @@ public class LauncherActivity extends Activity {
 	}
 
 	@Override
-	public boolean dispatchKeyEvent(KeyEvent event) {
-		Log.d("LauncherActivity", "dispatchKeyEvent: " + event);
-		if (event.getKeyCode() == KeyEvent.KEYCODE_HOME) {
-			if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled() && mDrawerShown) {
-			}
-			return true;
-		}
-		return super.dispatchKeyEvent(event);
-	}
-
-	@Override
 	public void onBackPressed() {
 		if (mDrawerShown) {
 			revealDrawer(false, true);
+		}
+	}
+
+	@Override
+	public void update(Observable observable, Object data) {
+		if (mOpenedCategory != null) {
+			((SimpleCursorAdapter) mAppsListView.getAdapter()).changeCursor(App.actions().query(mOpenedCategory, ""));
 		}
 	}
 }

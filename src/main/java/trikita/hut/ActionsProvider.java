@@ -19,6 +19,7 @@ import android.graphics.PaintFlagsDrawFilter;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.util.Base64;
 import android.widget.ListAdapter;
 import android.widget.SimpleCursorAdapter;
@@ -28,8 +29,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Observable;
 
-public class ActionsProvider {
+public class ActionsProvider extends Observable {
 
     public enum Category {
         ALL,        // Every action provided by the plugins
@@ -80,33 +82,45 @@ public class ActionsProvider {
     public final static String SHORTCUT_TAP = "tap";
 
     private final Context mContext;
-    private List<ActionInfo> mCache = null;
+    private List<ActionInfo> mCache = new ArrayList<>();
 
     public ActionsProvider(Context context) {
         mContext = context;
+        refresh();
     }
 
 	public synchronized void refresh() {
-        List<ActionInfo> actions = new ArrayList<>();
-        for (PackageInfo pack : mContext.getPackageManager().getInstalledPackages(PackageManager.GET_PROVIDERS)) {
-            ProviderInfo[] providers = pack.providers;
-            if (providers != null) {
-                for (ProviderInfo provider : providers) {
-                    if (provider.authority.startsWith(AUTHORITY_PREFIX)) {
-                        actions.addAll(getActions(mContext, Uri.parse("content://" + provider.authority + "/actions")));
+        new AsyncTask<Void, Void, List<ActionInfo>>() {
+            protected List<ActionInfo> doInBackground(Void... params) {
+                List<ActionInfo> actions = new ArrayList<>();
+                for (PackageInfo pack : mContext.getPackageManager().getInstalledPackages(PackageManager.GET_PROVIDERS)) {
+                    ProviderInfo[] providers = pack.providers;
+                    if (providers != null) {
+                        for (ProviderInfo provider : providers) {
+                            if (provider.authority.startsWith(AUTHORITY_PREFIX)) {
+                                actions.addAll(getActions(mContext, Uri.parse("content://" + provider.authority + "/actions")));
+                            }
+                        }
                     }
                 }
+                Collections.sort(actions, new Comparator<ActionInfo>() {
+                    public int compare(ActionInfo lhs, ActionInfo rhs) {
+                        return notNull(lhs.title).compareTo(notNull(rhs.title));
+                    }
+                    private String notNull(String s) {
+                        return s == null ? "" : s;
+                    }
+                });
+                return actions;
             }
-        }
-        Collections.sort(actions, new Comparator<ActionInfo>() {
-            public int compare(ActionInfo lhs, ActionInfo rhs) {
-                return notNull(lhs.title).compareTo(notNull(rhs.title));
+
+            @Override
+            protected void onPostExecute(List<ActionInfo> actions) {
+                mCache = actions;
+                ActionsProvider.this.setChanged();
+                ActionsProvider.this.notifyObservers();
             }
-            private String notNull(String s) {
-                return s == null ? "" : s;
-            }
-        });
-        mCache = actions;
+        }.execute();
 	}
 
     public void blacklist(long actionId, boolean state) {
@@ -124,9 +138,6 @@ public class ActionsProvider {
     }
 
     private List<ActionInfo> getAll() {
-        if (mCache == null) {
-            refresh();
-        }
 		return mCache;
 	}
 
