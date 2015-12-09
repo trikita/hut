@@ -179,7 +179,6 @@ public class ActionsProvider extends Observable {
         if (c == null) {
             return actions;
         }
-        c.moveToFirst();
         while (c.moveToNext()) {
             ActionInfo action = new ActionInfo(c.getLong(c.getColumnIndex(COLUMN_ID)),
                     c.getString(c.getColumnIndex(COLUMN_ICON)),

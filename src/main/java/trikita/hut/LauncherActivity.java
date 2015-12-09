@@ -115,7 +115,7 @@ public class LauncherActivity extends Activity implements Observer {
 	public void openDrawer() {
 		mAppsFilter.setText("");
 		mOpenedCategory = ActionsProvider.Category.FAVOURITES;
-		mAppsListView.setAdapter(ActionsAdapter.create(this, mOpenedCategory, null));
+		mAppsListView.setAdapter(new ActionsAdapter(this, mOpenedCategory, null));
 		mAppsFilter.setVisibility(View.GONE);
 		revealDrawer(true, true);
 	}
@@ -124,7 +124,7 @@ public class LauncherActivity extends Activity implements Observer {
 	public boolean openDrawerWithFilter() {
 		mAppsFilter.setText("");
 		mOpenedCategory = ActionsProvider.Category.ALL;
-		mAppsListView.setAdapter(ActionsAdapter.create(this, mOpenedCategory, null));
+		mAppsListView.setAdapter(new ActionsAdapter(this, mOpenedCategory, null));
 		mAppsFilter.setVisibility(View.VISIBLE);
 		mAppsFilter.requestFocus();
 		revealDrawer(true, true);

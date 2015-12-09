@@ -29,7 +29,7 @@ public class PickerActivity extends Activity {
 		final SimpleCursorAdapter adapter;
 		switch (action) {
 			case "trikita.hut.intent.action.BLACKLIST":
-				adapter = ActionsAdapter.create(this, ActionsProvider.Category.ALL, new SimpleCursorAdapter.ViewBinder() {
+				adapter = new ActionsAdapter(this, ActionsProvider.Category.ALL, new SimpleCursorAdapter.ViewBinder() {
 					public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
 						if (columnIndex == cursor.getColumnIndex(ActionsProvider.COLUMN_ID)) {
 							CheckBox checkBox = (CheckBox) view;
@@ -53,7 +53,7 @@ public class PickerActivity extends Activity {
 				});
 				break;
 			case "trikita.hut.intent.action.PICK":
-				adapter = ActionsAdapter.create(this, ActionsProvider.Category.SHORTCUTS, null);
+				adapter = new ActionsAdapter(this, ActionsProvider.Category.SHORTCUTS, null);
 				actionsView.setOnItemClickListener(new AbsListView.OnItemClickListener() {
 					public void onItemClick(AdapterView<?> av, View v, int pos, long id) {
 						Cursor cursor = (Cursor) av.getAdapter().getItem(pos);
