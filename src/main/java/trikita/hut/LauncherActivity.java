@@ -30,11 +30,11 @@ import butterknife.*;
 
 public class LauncherActivity extends Activity implements Observer {
 
-	@Bind(R.id.background) View mBackground;
-	@Bind(R.id.drawer) View mDrawerView;
-	@Bind(R.id.btn_apps) View mDrawerButton;
-	@Bind(R.id.list) GridView mAppsListView;
-	@Bind(R.id.filter) EditText mAppsFilter;
+	@BindView(R.id.background) View mBackground;
+	@BindView(R.id.drawer) View mDrawerView;
+	@BindView(R.id.btn_apps) View mDrawerButton;
+	@BindView(R.id.list) GridView mAppsListView;
+	@BindView(R.id.filter) EditText mAppsFilter;
 
 	private boolean mDrawerShown = false;
 	private ActionsProvider.Category mOpenedCategory = null;

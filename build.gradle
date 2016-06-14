@@ -3,10 +3,12 @@ buildscript {
 		jcenter()
 	}
 	dependencies {
-		classpath 'com.android.tools.build:gradle:1.+'
+		classpath 'com.android.tools.build:gradle:2.1.0'
+		classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
 	}
 }
 apply plugin: 'com.android.application'
+apply plugin: 'android-apt'
 
 android {
 	compileSdkVersion 'android-23'
@@ -30,5 +32,6 @@ repositories {
 }
 
 dependencies {
-	compile 'com.jakewharton:butterknife:+'
+	compile 'com.jakewharton:butterknife:8.0.1'
+	apt 'com.jakewharton:butterknife-compiler:8.0.1'
 }
