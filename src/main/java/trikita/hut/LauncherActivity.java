@@ -157,8 +157,8 @@ public class LauncherActivity extends Activity implements Observer {
 				anim.start();
 			}
 		} else if (mDrawerShown) {
-			if (animate && mDrawerView.isAttachedToWindow() &&
-					android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			if (animate && android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+					&& mDrawerView.isAttachedToWindow()) {
 				Animator anim =
 						ViewAnimationUtils.createCircularReveal(mDrawerView, cx, cy, r, 0);
 				anim.addListener(new AnimatorListenerAdapter() {
